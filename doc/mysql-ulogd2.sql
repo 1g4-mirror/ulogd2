@@ -84,7 +84,7 @@ CREATE TABLE `mac` (
   `_mac_id` bigint unsigned NOT NULL auto_increment,
   `mac_saddr` varchar(32) default NULL,
   `mac_daddr` varchar(32) default NULL,
-  `mac_protocol` smallint(5) default NULL,
+  `mac_protocol` smallint(5) unsigned default NULL,
   UNIQUE KEY `key_id` (`_mac_id`)
 ) ENGINE=INNODB;
 
@@ -681,7 +681,7 @@ delimiter $$
 CREATE FUNCTION INSERT_OR_SELECT_MAC(
 		`_saddr` varchar(32),
 		`_daddr` varchar(32),
-		`_protocol` smallint(5)
+		`_protocol` smallint(5) unsigned
 		) RETURNS bigint unsigned
 NOT DETERMINISTIC
 READS SQL DATA
@@ -764,7 +764,7 @@ CREATE FUNCTION INSERT_PACKET_FULL(
                 raw_header varchar(256),
 		mac_saddr varchar(32),
 		mac_daddr varchar(32),
-		mac_protocol smallint(5),
+		mac_protocol smallint(5) unsigned,
 		_label tinyint(4) unsigned,
 		sctp_sport smallint(5) unsigned,
 		sctp_dport smallint(5) unsigned,

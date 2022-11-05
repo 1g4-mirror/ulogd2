@@ -51,7 +51,7 @@ CREATE TABLE `ulog2` (
   `raw_label` tinyint(3) unsigned default NULL,
   `mac_saddr_str` varchar(32) default NULL,
   `mac_daddr_str` varchar(32) default NULL,
-  `oob_protocol` smallint(5) default NULL,
+  `oob_protocol` smallint(5) unsigned default NULL,
   `raw_type` int(10) unsigned default NULL,
   `mac_str` varchar(255) default NULL,
   `tcp_sport` int(5) unsigned default NULL,
