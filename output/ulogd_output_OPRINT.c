@@ -65,32 +65,36 @@ static int oprint_interp(struct ulogd_pluginstance *upi)
 
 		fprintf(opi->of,"%s=", ret->name);
 		switch (ret->type) {
-			case ULOGD_RET_STRING:
-				fprintf(opi->of, "%s\n",
-					(char *) ret->u.value.ptr);
-				break;
-			case ULOGD_RET_BOOL:
-			case ULOGD_RET_INT8:
-			case ULOGD_RET_INT16:
-			case ULOGD_RET_INT32:
-				fprintf(opi->of, "%d\n", ret->u.value.i32);
-				break;
-			case ULOGD_RET_UINT8:
-			case ULOGD_RET_UINT16:
-			case ULOGD_RET_UINT32:
-				fprintf(opi->of, "%u\n", ret->u.value.ui32);
-				break;
-			case ULOGD_RET_UINT64:
-				fprintf(opi->of, "%" PRIu64 "\n", ret->u.value.ui64);
-				break;
-			case ULOGD_RET_IPADDR:
-				fprintf(opi->of, "%u.%u.%u.%u\n", 
-					HIPQUAD(ret->u.value.ui32));
-				break;
-			case ULOGD_RET_NONE:
-				fprintf(opi->of, "<none>\n");
-				break;
-			default: fprintf(opi->of, "default\n");
+		case ULOGD_RET_STRING:
+			fprintf(opi->of, "%s\n", (char *) ret->u.value.ptr);
+			break;
+		case ULOGD_RET_BOOL:
+		case ULOGD_RET_INT8:
+		case ULOGD_RET_INT16:
+		case ULOGD_RET_INT32:
+			fprintf(opi->of, "%d\n", ret->u.value.i32);
+			break;
+		case ULOGD_RET_INT64:
+			fprintf(opi->of, "%" PRId64 "\n", ret->u.value.i64);
+			break;
+		case ULOGD_RET_UINT8:
+		case ULOGD_RET_UINT16:
+		case ULOGD_RET_UINT32:
+			fprintf(opi->of, "%u\n", ret->u.value.ui32);
+			break;
+		case ULOGD_RET_UINT64:
+			fprintf(opi->of, "%" PRIu64 "\n", ret->u.value.ui64);
+			break;
+		case ULOGD_RET_IPADDR:
+			fprintf(opi->of, "%u.%u.%u.%u\n",
+				HIPQUAD(ret->u.value.ui32));
+			break;
+		case ULOGD_RET_NONE:
+			fprintf(opi->of, "<none>\n");
+			break;
+		default:
+			fprintf(opi->of, "default\n");
+			break;
 		}
 	}
 	if (upi->config_kset->ces[1].u.value != 0)
