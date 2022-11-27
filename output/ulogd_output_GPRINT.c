@@ -127,13 +127,15 @@ static int gprint_interp(struct ulogd_pluginstance *upi)
 		case ULOGD_RET_INT8:
 		case ULOGD_RET_INT16:
 		case ULOGD_RET_INT32:
+		case ULOGD_RET_INT64:
 			ret = snprintf(buf+size, rem, "%s=", key->name);
 			if (ret < 0)
 				break;
 			rem -= ret;
 			size += ret;
 
-			ret = snprintf(buf+size, rem, "%d,", key->u.value.i32);
+			ret = snprintf(buf+size, rem, "%" PRId64 ",",
+				       key->u.value.i64);
 			if (ret < 0)
 				break;
 			rem -= ret;

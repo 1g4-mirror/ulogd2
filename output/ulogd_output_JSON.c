@@ -364,6 +364,9 @@ static int json_interp(struct ulogd_pluginstance *upi)
 		case ULOGD_RET_INT32:
 			json_object_set_new(msg, field_name, json_integer(key->u.value.i32));
 			break;
+		case ULOGD_RET_INT64:
+			json_object_set_new(msg, field_name, json_integer(key->u.value.i64));
+			break;
 		case ULOGD_RET_UINT8:
 			if ((upi->config_kset->ces[JSON_CONF_BOOLEAN_LABEL].u.value != 0)
 					&& (!strcmp(key->name, "raw.label"))) {
