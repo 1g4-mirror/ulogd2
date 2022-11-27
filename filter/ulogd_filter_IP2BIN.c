@@ -218,7 +218,7 @@ static int interp_ip2bin(struct ulogd_pluginstance *pi)
 	return ULOGD_IRET_OK;
 }
 
-static struct ulogd_plugin ip2bin_pluging = {
+static struct ulogd_plugin ip2bin_plugin = {
 	.name = "IP2BIN",
 	.input = {
 		.keys = ip2bin_inp,
@@ -238,5 +238,5 @@ void __attribute__ ((constructor)) init(void);
 
 void init(void)
 {
-	ulogd_register_plugin(&ip2bin_pluging);
+	ulogd_register_plugin(&ip2bin_plugin);
 }
