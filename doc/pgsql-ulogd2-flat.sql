@@ -43,7 +43,7 @@ CREATE TABLE ulog2 (
   ip_protocol smallint default NULL,
   ip_tos smallint default NULL,
   ip_ttl smallint default NULL,
-  ip_totlen smallint default NULL,
+  ip_totlen integer default NULL,
   ip_ihl smallint default NULL,
   ip_csum integer default NULL,
   ip_id integer default NULL,
