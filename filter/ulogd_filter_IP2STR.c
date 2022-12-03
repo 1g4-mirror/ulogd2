@@ -137,7 +137,7 @@ static struct ulogd_key ip2str_keys[] = {
 	},
 };
 
-static char ipstr_array[MAX_KEY-START_KEY][IPADDR_LENGTH];
+static char ipstr_array[MAX_KEY - START_KEY + 1][IPADDR_LENGTH];
 
 static int ip2str(struct ulogd_key *inp, int index, int oindex)
 {
@@ -197,10 +197,10 @@ static int interp_ip2str(struct ulogd_pluginstance *pi)
 	/* Iter on all addr fields */
 	for (i = START_KEY; i <= MAX_KEY; i++) {
 		if (pp_is_valid(inp, i)) {
-			fret = ip2str(inp, i, i-START_KEY);
+			fret = ip2str(inp, i, i - START_KEY);
 			if (fret != ULOGD_IRET_OK)
 				return fret;
-			okey_set_ptr(&ret[i-START_KEY],
+			okey_set_ptr(&ret[i - START_KEY],
 				     ipstr_array[i-START_KEY]);
 		}
 	}

@@ -114,7 +114,7 @@ static struct ulogd_key ip2bin_keys[] = {
 
 };
 
-static char ipbin_array[MAX_KEY-START_KEY][IPADDR_LENGTH];
+static char ipbin_array[MAX_KEY - START_KEY + 1][IPADDR_LENGTH];
 
 /**
  * Convert IPv4 address (as 32-bit unsigned integer) to IPv6 address:
@@ -128,7 +128,7 @@ static inline void uint32_to_ipv6(const uint32_t ipv4, struct in6_addr *ipv6)
 	ipv6->s6_addr32[3] = ipv4;
 }
 
-static int ip2bin(struct ulogd_key* inp, int index, int oindex)
+static int ip2bin(struct ulogd_key *inp, int index, int oindex)
 {
 	char family = ikey_get_u8(&inp[KEY_OOB_FAMILY]);
 	char convfamily = family;
@@ -184,7 +184,7 @@ static int ip2bin(struct ulogd_key* inp, int index, int oindex)
 	addr8 = &addr->s6_addr[0];
 	for (i = 0; i < 4; i++) {
 		written = sprintf(buffer, "%02x%02x%02x%02x",
-				addr8[0], addr8[1], addr8[2], addr8[3]);
+				  addr8[0], addr8[1], addr8[2], addr8[3]);
 		if (written != 2 * 4) {
 			buffer[0] = 0;
 			return ULOGD_IRET_ERR;
@@ -205,13 +205,13 @@ static int interp_ip2bin(struct ulogd_pluginstance *pi)
 	int fret;
 
 	/* Iter on all addr fields */
-	for(i = START_KEY; i < MAX_KEY; i++) {
+	for(i = START_KEY; i <= MAX_KEY; i++) {
 		if (pp_is_valid(inp, i)) {
-			fret = ip2bin(inp, i, i-START_KEY);
+			fret = ip2bin(inp, i, i - START_KEY);
 			if (fret != ULOGD_IRET_OK)
 				return fret;
-			okey_set_ptr(&ret[i-START_KEY],
-				     ipbin_array[i-START_KEY]);
+			okey_set_ptr(&ret[i - START_KEY],
+				     ipbin_array[i - START_KEY]);
 		}
 	}
 

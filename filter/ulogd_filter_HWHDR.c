@@ -109,7 +109,7 @@ static struct ulogd_key mac2str_keys[] = {
 	},
 };
 
-static char hwmac_str[MAX_KEY - START_KEY][HWADDR_LENGTH];
+static char hwmac_str[MAX_KEY - START_KEY + 1][HWADDR_LENGTH];
 
 static int parse_mac2str(struct ulogd_key *ret, unsigned char *mac,
 			 int okey, int len)
@@ -126,7 +126,7 @@ static int parse_mac2str(struct ulogd_key *ret, unsigned char *mac,
 	buf_cur = hwmac_str[okey - START_KEY];
 	for (i = 0; i < len; i++)
 		buf_cur += sprintf(buf_cur, "%02x%c", mac[i],
-				i == len - 1 ? 0 : ':');
+				   i == len - 1 ? 0 : ':');
 
 	okey_set_ptr(&ret[okey], hwmac_str[okey - START_KEY]);
 

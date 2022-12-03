@@ -153,7 +153,7 @@ static int interp_ip2hbin(struct ulogd_pluginstance *pi)
 	}
 
 	/* Iter on all addr fields */
-	for(i = START_KEY; i < MAX_KEY; i++) {
+	for(i = START_KEY; i <= MAX_KEY; i++) {
 		if (pp_is_valid(inp, i)) {
 			switch (convfamily) {
 			case AF_INET:
