@@ -404,14 +404,17 @@ static void __format_query_db(struct ulogd_pluginstance *upi, char *start)
 static int __add_to_backlog(struct ulogd_pluginstance *upi, const char *stmt, unsigned int len)
 {
 	struct db_instance *di = (struct db_instance *) &upi->private;
+	unsigned int query_size;
 	struct db_stmt *query;
 
 	/* check if we are using backlog */
 	if (di->backlog_memcap == 0)
 		return 0;
 
+	query_size = sizeof(*query) + len + 1;
+
 	/* check len against backlog */
-	if (len + di->backlog_memusage > di->backlog_memcap) {
+	if (query_size + di->backlog_memcap - di->backlog_memusage) {
 		if (di->backlog_full == 0)
 			ulogd_log(ULOGD_ERROR,
 				  "Backlog is full starting to reject events.\n");
@@ -419,7 +422,7 @@ static int __add_to_backlog(struct ulogd_pluginstance *upi, const char *stmt, un
 		return -1;
 	}
 
-	query = malloc(sizeof(struct db_stmt));
+	query = malloc(sizeof(*query));
 	if (query == NULL)
 		return -1;
 
@@ -431,7 +434,7 @@ static int __add_to_backlog(struct ulogd_pluginstance *upi, const char *stmt, un
 		return -1;
 	}
 
-	di->backlog_memusage += len + sizeof(struct db_stmt);
+	di->backlog_memusage += query_size;
 	di->backlog_full = 0;
 
 	llist_add_tail(&query->list, &di->backlog);
@@ -489,7 +492,7 @@ static int __treat_backlog(struct ulogd_pluginstance *upi)
 			di->driver->close_db(upi);
 			return _init_reconnect(upi);
 		} else {
-			di->backlog_memusage -= query->len + sizeof(struct db_stmt);
+			di->backlog_memusage -= sizeof(*query) + query->len + 1;
 			llist_del(&query->list);
 			free(query->stmt);
 			free(query);
