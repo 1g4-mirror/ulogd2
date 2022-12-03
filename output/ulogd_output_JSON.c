@@ -276,8 +276,8 @@ static int json_interp_file(struct ulogd_pluginstance *upi, char *buf)
 static int json_interp(struct ulogd_pluginstance *upi)
 {
 	struct json_priv *opi = (struct json_priv *) &upi->private;
+	char *dvc, *buf, *tmp;
 	unsigned int i;
-	char *buf, *tmp;
 	size_t buflen;
 	json_t *msg;
 
@@ -335,10 +335,8 @@ static int json_interp(struct ulogd_pluginstance *upi)
 			json_object_set_new(msg, "timestamp", json_string(timestr));
 	}
 
-	if (upi->config_kset->ces[JSON_CONF_DEVICE].u.string) {
-		char *dvc = upi->config_kset->ces[JSON_CONF_DEVICE].u.string;
-		json_object_set_new(msg, "dvc", json_string(dvc));
-	}
+	dvc = upi->config_kset->ces[JSON_CONF_DEVICE].u.string;
+	json_object_set_new(msg, "dvc", json_string(dvc));
 
 	for (i = 0; i < upi->input.num_keys; i++) {
 		struct ulogd_key *key = upi->input.keys[i].u.source;
