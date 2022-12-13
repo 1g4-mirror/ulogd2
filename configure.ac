@@ -92,7 +92,7 @@ AS_IF([test "x$enable_pgsql" != "xno"], [
 
     AS_IF([command -v "$pg_config" >/dev/null], [
 
-      libpq_CFLAGS="`$pg_config --includedir`"
+      libpq_CFLAGS="-I`$pg_config --includedir`"
       libpq_LIBS="`$pg_config --libdir` -lpq"
 
       AC_SUBST([libpq_CFLAGS])
