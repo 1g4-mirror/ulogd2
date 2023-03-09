@@ -1334,6 +1334,15 @@ static void stop_pluginstances()
 				(*pi->plugin->stop)(pi);
 				pi->private[0] = 0;
 			}
+
+			/* NB: plugin->stop() might access other plugin instances,
+			 * so we cannot free right away.
+			 */
+		}
+	}
+
+	llist_for_each_entry(stack, &ulogd_pi_stacks, stack_list) {
+		llist_for_each_entry_safe(pi, npi, &stack->list, list) {
 			free(pi);
 		}
 	}
