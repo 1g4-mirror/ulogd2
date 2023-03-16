@@ -220,33 +220,20 @@ static int append_create_outfile(struct ulogd_pluginstance *upi)
 {
 	struct pcap_instance *pi = (struct pcap_instance *) &upi->private;
 	char *filename = upi->config_kset->ces[0].u.string;
-	struct stat st_dummy;
-	int exist = 0;
+	struct stat st_of;
 
-	if (stat(filename, &st_dummy) == 0 && st_dummy.st_size > 0)
-		exist = 1;
-
-	if (!exist) {
-		pi->of = fopen(filename, "w");
-		if (!pi->of) {
-			ulogd_log(ULOGD_ERROR, "can't open pcap file %s: %s\n",
-				  filename,
-				  strerror(errno));
-			return -EPERM;
-		}
-		if (!write_pcap_header(pi)) {
-			ulogd_log(ULOGD_ERROR, "can't write pcap header: %s\n",
-				  strerror(errno));
-			return -ENOSPC;
-		}
-	} else {
-		pi->of = fopen(filename, "a");
-		if (!pi->of) {
-			ulogd_log(ULOGD_ERROR, "can't open pcap file %s: %s\n", 
-				filename,
-				strerror(errno));
-			return -EPERM;
-		}		
+	pi->of = fopen(filename, "a");
+	if (!pi->of) {
+		ulogd_log(ULOGD_ERROR, "can't open pcap file %s: %s\n",
+			  filename,
+			  strerror(errno));
+		return -EPERM;
+	}
+	if (fstat(fileno(pi->of), &st_of) == 0 && st_of.st_size == 0 &&
+	    !write_pcap_header(pi)) {
+		ulogd_log(ULOGD_ERROR, "can't write pcap header: %s\n",
+			  strerror(errno));
+		return -ENOSPC;
 	}
 
 	return 0;
