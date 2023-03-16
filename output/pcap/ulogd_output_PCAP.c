@@ -221,14 +221,20 @@ static int append_create_outfile(struct ulogd_pluginstance *upi)
 	struct pcap_instance *pi = (struct pcap_instance *) &upi->private;
 	char *filename = upi->config_kset->ces[0].u.string;
 	struct stat st_of;
+	FILE *of;
 
-	pi->of = fopen(filename, "a");
-	if (!pi->of) {
+	of = fopen(filename, "a");
+	if (!of) {
 		ulogd_log(ULOGD_ERROR, "can't open pcap file %s: %s\n",
 			  filename,
 			  strerror(errno));
 		return -EPERM;
 	}
+
+	if (pi->of)
+		fclose(pi->of);
+	pi->of = of;
+
 	if (fstat(fileno(pi->of), &st_of) == 0 && st_of.st_size == 0 &&
 	    !write_pcap_header(pi)) {
 		ulogd_log(ULOGD_ERROR, "can't write pcap header: %s\n",
@@ -241,12 +247,9 @@ static int append_create_outfile(struct ulogd_pluginstance *upi)
 
 static void signal_pcap(struct ulogd_pluginstance *upi, int signal)
 {
-	struct pcap_instance *pi = (struct pcap_instance *) &upi->private;
-
 	switch (signal) {
 	case SIGHUP:
 		ulogd_log(ULOGD_NOTICE, "reopening capture file\n");
-		fclose(pi->of);
 		append_create_outfile(upi);
 		break;
 	default:
