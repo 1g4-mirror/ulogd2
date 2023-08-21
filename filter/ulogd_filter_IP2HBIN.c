@@ -157,15 +157,14 @@ static int interp_ip2hbin(struct ulogd_pluginstance *pi)
 		if (pp_is_valid(inp, i)) {
 			switch (convfamily) {
 			case AF_INET:
-				okey_set_u32(&ret[i-START_KEY],
-					ntohl(ikey_get_u32(&inp[i])));
+				okey_set_u32(&ret[i - START_KEY],
+					     ntohl(ikey_get_u32(&inp[i])));
 				break;
 			case AF_INET6:
-				okey_set_ptr(&ret[i-START_KEY],
-					(struct in6_addr *)ikey_get_u128(&inp[i]));
+				okey_set_u128(&ret[i - START_KEY],
+					      ikey_get_u128(&inp[i]));
 				break;
 			default:
-				;
 				break;
 			}
 		}
