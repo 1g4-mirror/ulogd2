@@ -426,6 +426,9 @@ static int ipfix_interp(struct ulogd_pluginstance *pi)
 	if (!(GET_FLAGS(pi->input.keys, InIpSaddr) & ULOGD_RETF_VALID))
 		return ULOGD_IRET_OK;
 
+	if (GET_LENGTH(pi->input.keys, InIpSaddr) != sizeof(data->saddr))
+		return ULOGD_IRET_OK;
+
 	oid = oid_ce(pi->config_kset).u.value;
 	mtu = mtu_ce(pi->config_kset).u.value;
 	send_template = send_template_ce(pi->config_kset).u.string;
