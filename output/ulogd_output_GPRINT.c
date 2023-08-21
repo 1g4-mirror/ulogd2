@@ -27,6 +27,8 @@
 #include <time.h>
 #include <errno.h>
 #include <inttypes.h>
+#include <arpa/inet.h>
+#include <netinet/in.h>
 #include <ulogd/ulogd.h>
 #include <ulogd/conffile.h>
 
@@ -68,12 +70,6 @@ static struct config_keyset gprint_kset = {
 		},
 	},
 };
-
-#define NIPQUAD(addr) \
-        ((unsigned char *)&addr)[0], \
-        ((unsigned char *)&addr)[1], \
-        ((unsigned char *)&addr)[2], \
-        ((unsigned char *)&addr)[3]
 
 static int gprint_interp(struct ulogd_pluginstance *upi)
 {
@@ -158,20 +154,24 @@ static int gprint_interp(struct ulogd_pluginstance *upi)
 			rem -= ret;
 			size += ret;
 			break;
-		case ULOGD_RET_IPADDR:
+		case ULOGD_RET_IPADDR: {
+			struct in_addr ipv4addr;
+
 			ret = snprintf(buf+size, rem, "%s=", key->name);
 			if (ret < 0)
 				break;
 			rem -= ret;
 			size += ret;
 
-			ret = snprintf(buf+size, rem, "%u.%u.%u.%u,",
-				NIPQUAD(key->u.value.ui32));
-			if (ret < 0)
+			ipv4addr.s_addr = key->u.value.ui32;
+			if (!inet_ntop(AF_INET, &ipv4addr, buf + size, rem))
 				break;
+			ret = strlen(buf + size);
+
 			rem -= ret;
 			size += ret;
 			break;
+		}
 		default:
 			/* don't know how to interpret this key. */
 			break;

@@ -24,24 +24,14 @@
 #include <string.h>
 #include <errno.h>
 #include <inttypes.h>
+#include <arpa/inet.h>
+#include <netinet/in.h>
 #include <ulogd/ulogd.h>
 #include <ulogd/conffile.h>
 
 #ifndef ULOGD_OPRINT_DEFAULT
 #define ULOGD_OPRINT_DEFAULT	"/var/log/ulogd_oprint.log"
 #endif
-
-#define NIPQUAD(addr) \
-	((unsigned char *)&addr)[0], \
-	((unsigned char *)&addr)[1], \
-        ((unsigned char *)&addr)[2], \
-        ((unsigned char *)&addr)[3]
-
-#define HIPQUAD(addr) \
-        ((unsigned char *)&addr)[3], \
-        ((unsigned char *)&addr)[2], \
-        ((unsigned char *)&addr)[1], \
-        ((unsigned char *)&addr)[0]
 
 struct oprint_priv {
 	FILE *of;
@@ -59,7 +49,7 @@ static int oprint_interp(struct ulogd_pluginstance *upi)
 		if (!ret)
 			ulogd_log(ULOGD_NOTICE, "no result for %s ?!?\n",
 				  upi->input.keys[i].name);
-		
+
 		if (!IS_VALID(*ret))
 			continue;
 
@@ -85,10 +75,18 @@ static int oprint_interp(struct ulogd_pluginstance *upi)
 		case ULOGD_RET_UINT64:
 			fprintf(opi->of, "%" PRIu64 "\n", ret->u.value.ui64);
 			break;
-		case ULOGD_RET_IPADDR:
-			fprintf(opi->of, "%u.%u.%u.%u\n",
-				HIPQUAD(ret->u.value.ui32));
+		case ULOGD_RET_IPADDR: {
+			char addrbuf[INET_ADDRSTRLEN + 1] = "";
+			struct in_addr ipv4addr;
+
+			ipv4addr.s_addr = ret->u.value.ui32;
+			if (!inet_ntop(AF_INET, &ipv4addr, addrbuf,
+				       sizeof(addrbuf)))
+				break;
+
+			fprintf(opi->of, "%s\n", addrbuf);
 			break;
+		}
 		case ULOGD_RET_NONE:
 			fprintf(opi->of, "<none>\n");
 			break;
