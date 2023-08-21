@@ -896,18 +896,23 @@ static int _interp_arp(struct ulogd_pluginstance *pi, uint32_t len)
 	struct ulogd_key *ret = pi->output.keys;
 	const struct ether_arp *arph =
 		ikey_get_ptr(&pi->input.keys[INKEY_RAW_PCKT]);
+	uint32_t arp_spa, arp_tpa;
 
 	if (len < sizeof(struct ether_arp))
 		return ULOGD_IRET_OK;
 
-	okey_set_u16(&ret[KEY_ARP_HTYPE], ntohs(arph->arp_hrd));
-	okey_set_u16(&ret[KEY_ARP_PTYPE], ntohs(arph->arp_pro));
+	okey_set_u16(&ret[KEY_ARP_HTYPE],  ntohs(arph->arp_hrd));
+	okey_set_u16(&ret[KEY_ARP_PTYPE],  ntohs(arph->arp_pro));
 	okey_set_u16(&ret[KEY_ARP_OPCODE], ntohs(arph->arp_op));
 
 	okey_set_ptr(&ret[KEY_ARP_SHA], (void *)&arph->arp_sha);
-	okey_set_ptr(&ret[KEY_ARP_SPA], (void *)&arph->arp_spa);
 	okey_set_ptr(&ret[KEY_ARP_THA], (void *)&arph->arp_tha);
-	okey_set_ptr(&ret[KEY_ARP_TPA], (void *)&arph->arp_tpa);
+
+	memcpy(&arp_spa, arph->arp_spa, sizeof(arp_spa));
+	memcpy(&arp_tpa, arph->arp_tpa, sizeof(arp_tpa));
+
+	okey_set_u32(&ret[KEY_ARP_SPA], arp_spa);
+	okey_set_u32(&ret[KEY_ARP_TPA], arp_tpa);
 
 	return ULOGD_IRET_OK;
 }
