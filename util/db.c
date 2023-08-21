@@ -344,6 +344,9 @@ static void __format_query_db(struct ulogd_pluginstance *upi, char *start)
 		}
 
 		switch (res->type) {
+		case ULOGD_RET_BOOL:
+			sprintf(stmt_ins, "'%d',", res->u.value.b);
+			break;
 		case ULOGD_RET_INT8:
 			sprintf(stmt_ins, "%d,", res->u.value.i8);
 			break;
@@ -363,15 +366,23 @@ static void __format_query_db(struct ulogd_pluginstance *upi, char *start)
 			sprintf(stmt_ins, "%u,", res->u.value.ui16);
 			break;
 		case ULOGD_RET_IPADDR:
-			/* fallthrough when logging IP as uint32_t */
+			if (res->len == sizeof(struct in_addr))
+				sprintf(stmt_ins, "%u,", res->u.value.ui32);
+			else {
+				struct in6_addr ipv6;
+				char addrbuf[2 + sizeof(ipv6) * 2  + 1];
+
+				memcpy(ipv6.s6_addr, res->u.value.ui128,
+				       sizeof(ipv6.s6_addr));
+				format_ipv6(addrbuf, sizeof(addrbuf), &ipv6);
+				sprintf(stmt_ins, "%s,", addrbuf);
+			}
+			break;
 		case ULOGD_RET_UINT32:
 			sprintf(stmt_ins, "%u,", res->u.value.ui32);
 			break;
 		case ULOGD_RET_UINT64:
 			sprintf(stmt_ins, "%" PRIu64 ",", res->u.value.ui64);
-			break;
-		case ULOGD_RET_BOOL:
-			sprintf(stmt_ins, "'%d',", res->u.value.b);
 			break;
 		case ULOGD_RET_STRING:
 			*(stmt_ins++) = '\'';

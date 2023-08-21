@@ -18,6 +18,7 @@
 #include <signal.h>	/* need this because of extension-sighandler */
 #include <sys/types.h>
 #include <inttypes.h>
+#include <netinet/in.h>
 #include <string.h>
 #include <config.h>
 
@@ -206,6 +207,46 @@ static inline void *ikey_get_u128(struct ulogd_key *key)
 static inline void *ikey_get_ptr(struct ulogd_key *key)
 {
 	return key->u.source->u.value.ptr;
+}
+
+/**
+ * Convert IPv4 address (as 32-bit unsigned integer) to IPv6 address: add 96-bit
+ * prefix "::ffff" to get IPv6 address "::ffff:a.b.c.d".
+ */
+static inline struct in6_addr *
+uint32_to_ipv6(uint32_t ipv4, struct in6_addr *ipv6)
+{
+	static const uint8_t IPV4_IN_IPV6_PREFIX[12] = {
+		[10] = 0xff,
+		[11] = 0xff,
+	};
+	uint8_t *p = ipv6->s6_addr;
+
+	memcpy(p, IPV4_IN_IPV6_PREFIX, sizeof(IPV4_IN_IPV6_PREFIX));
+	p += sizeof(IPV4_IN_IPV6_PREFIX);
+	memcpy(p, &ipv4, sizeof(ipv4));
+
+	return ipv6;
+}
+
+static inline void
+format_ipv6(char *buf, size_t size, const struct in6_addr *ipv6)
+{
+	unsigned i = 0;
+
+	if (size > 2 + sizeof (*ipv6) * 2) {
+		buf[i++] = '0';
+		buf[i++] = 'x';
+
+		for (unsigned j = 0; i < sizeof(*ipv6); j += 4, i += 8) {
+			sprintf(buf + i, "%02hhx%02hhx%02hhx%02hhx",
+				ipv6->s6_addr[j + 0],
+				ipv6->s6_addr[j + 1],
+				ipv6->s6_addr[j + 2],
+				ipv6->s6_addr[j + 3]);
+		}
+	}
+	buf[i] = '\0';
 }
 
 struct ulogd_pluginstance_stack;

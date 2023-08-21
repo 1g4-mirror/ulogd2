@@ -116,27 +116,12 @@ static struct ulogd_key ip2bin_keys[] = {
 
 static char ipbin_array[MAX_KEY - START_KEY + 1][IPADDR_LENGTH];
 
-/**
- * Convert IPv4 address (as 32-bit unsigned integer) to IPv6 address:
- * add 96 bits prefix "::ffff:" to get IPv6 address "::ffff:a.b.c.d".
- */
-static inline void uint32_to_ipv6(const uint32_t ipv4, struct in6_addr *ipv6)
-{
-	ipv6->s6_addr32[0] = 0x00000000;
-	ipv6->s6_addr32[1] = 0x00000000;
-	ipv6->s6_addr32[2] = htonl(0xffff);
-	ipv6->s6_addr32[3] = ipv4;
-}
-
 static int ip2bin(struct ulogd_key *inp, int index, int oindex)
 {
 	char family = ikey_get_u8(&inp[KEY_OOB_FAMILY]);
 	char convfamily = family;
-	unsigned char *addr8;
 	struct in6_addr *addr;
 	struct in6_addr ip4_addr;
-	char *buffer;
-	int i, written;
 
 	if (family == AF_BRIDGE) {
 		if (!pp_is_valid(inp, KEY_OOB_PROTOCOL)) {
@@ -176,23 +161,7 @@ static int ip2bin(struct ulogd_key *inp, int index, int oindex)
 			return ULOGD_IRET_ERR;
 	}
 
-	buffer = ipbin_array[oindex];
-	/* format IPv6 to BINARY(16) as "0x..." */
-	buffer[0] = '0';
-	buffer[1] = 'x';
-	buffer += 2;
-	addr8 = &addr->s6_addr[0];
-	for (i = 0; i < 4; i++) {
-		written = sprintf(buffer, "%02x%02x%02x%02x",
-				  addr8[0], addr8[1], addr8[2], addr8[3]);
-		if (written != 2 * 4) {
-			buffer[0] = 0;
-			return ULOGD_IRET_ERR;
-		}
-		buffer += written;
-		addr8 += 4;
-	}
-	buffer[0] = 0;
+	format_ipv6(ipbin_array[oindex], IPADDR_LENGTH, addr);
 
 	return ULOGD_IRET_OK;
 }
