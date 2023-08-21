@@ -33,6 +33,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <arpa/inet.h>
+#include <netinet/in.h>
 #include <ulogd/ulogd.h>
 #include <ulogd/conffile.h>
 #include <sqlite3.h>
@@ -178,7 +179,11 @@ sqlite3_interp(struct ulogd_pluginstance *pi)
 			break;
 
 		case ULOGD_RET_IPADDR:
-			ret = sqlite3_bind_int(priv->p_stmt, i, k_ret->u.value.ui32);
+			if (k_ret->len == sizeof(struct in_addr))
+				ret = sqlite3_bind_int(priv->p_stmt, i,
+						       k_ret->u.value.ui32);
+			else
+				ret = sqlite3_bind_null(priv->p_stmt, i);
 			break;
 
 		case ULOGD_RET_UINT64:
