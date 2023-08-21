@@ -145,6 +145,10 @@ sqlite3_interp(struct ulogd_pluginstance *pi)
 		}
 
 		switch (f->key->type) {
+		case ULOGD_RET_BOOL:
+			ret = sqlite3_bind_int(priv->p_stmt, i, k_ret->u.value.b);
+			break;
+
 		case ULOGD_RET_INT8:
 			ret = sqlite3_bind_int(priv->p_stmt, i, k_ret->u.value.i8);
 			break;
@@ -158,7 +162,7 @@ sqlite3_interp(struct ulogd_pluginstance *pi)
 			break;
 
 		case ULOGD_RET_INT64:
-			ret = sqlite3_bind_int(priv->p_stmt, i, k_ret->u.value.i64);
+			ret = sqlite3_bind_int64(priv->p_stmt, i, k_ret->u.value.i64);
 			break;
 			
 		case ULOGD_RET_UINT8:
@@ -174,17 +178,16 @@ sqlite3_interp(struct ulogd_pluginstance *pi)
 			break;
 
 		case ULOGD_RET_IPADDR:
+			ret = sqlite3_bind_int(priv->p_stmt, i, k_ret->u.value.ui32);
+			break;
+
 		case ULOGD_RET_UINT64:
 			ret = sqlite3_bind_int64(priv->p_stmt, i, k_ret->u.value.ui64);
 			break;
 
-		case ULOGD_RET_BOOL:
-			ret = sqlite3_bind_int(priv->p_stmt, i, k_ret->u.value.b);
-			break;
-
 		case ULOGD_RET_STRING:
 			ret = sqlite3_bind_text(priv->p_stmt, i, k_ret->u.value.ptr,
-									strlen(k_ret->u.value.ptr), SQLITE_STATIC);
+						strlen(k_ret->u.value.ptr), SQLITE_STATIC);
 			break;
 
 		default:
