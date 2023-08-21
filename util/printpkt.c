@@ -260,8 +260,9 @@ static int printpkt_ipv4(struct ulogd_key *res, char *buf)
 					   ikey_get_u16(&res[KEY_ICMP_ECHOSEQ]));
 			break;
 		case ICMP_PARAMETERPROB:
+			paddr = ikey_get_u32(&res[KEY_ICMP_GATEWAY]);
 			buf_cur += sprintf(buf_cur, "PARAMETER=%u ",
-					   ikey_get_u32(&res[KEY_ICMP_GATEWAY]) >> 24);
+					   *(uint8_t *) &paddr);
 			break;
 		case ICMP_REDIRECT:
 			paddr = ikey_get_u32(&res[KEY_ICMP_GATEWAY]);

@@ -645,7 +645,7 @@ static int _interp_icmp(struct ulogd_pluginstance *pi, struct icmphdr *icmph,
 		break;
 	case ICMP_REDIRECT:
 	case ICMP_PARAMETERPROB:
-		okey_set_u32(&ret[KEY_ICMP_GATEWAY], ntohl(icmph->un.gateway));
+		okey_set_u32(&ret[KEY_ICMP_GATEWAY], icmph->un.gateway);
 		break;
 	case ICMP_DEST_UNREACH:
 		if (icmph->code == ICMP_FRAG_NEEDED) {
