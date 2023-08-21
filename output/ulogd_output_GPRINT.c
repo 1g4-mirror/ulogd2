@@ -155,7 +155,10 @@ static int gprint_interp(struct ulogd_pluginstance *upi)
 			size += ret;
 			break;
 		case ULOGD_RET_IPADDR: {
+			struct in6_addr ipv6addr;
 			struct in_addr ipv4addr;
+			int family;
+			void *addr;
 
 			ret = snprintf(buf+size, rem, "%s=", key->name);
 			if (ret < 0)
@@ -163,8 +166,17 @@ static int gprint_interp(struct ulogd_pluginstance *upi)
 			rem -= ret;
 			size += ret;
 
-			ipv4addr.s_addr = key->u.value.ui32;
-			if (!inet_ntop(AF_INET, &ipv4addr, buf + size, rem))
+			if (key->len == sizeof(ipv6addr)) {
+				memcpy(ipv6addr.s6_addr, key->u.value.ui128,
+				       sizeof(ipv6addr.s6_addr));
+				addr = &ipv6addr;
+				family = AF_INET6;
+			} else {
+				ipv4addr.s_addr = key->u.value.ui32;
+				addr = &ipv4addr;
+				family = AF_INET;
+			}
+			if (!inet_ntop(family, addr, buf + size, rem))
 				break;
 			ret = strlen(buf + size);
 

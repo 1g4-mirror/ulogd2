@@ -76,12 +76,23 @@ static int oprint_interp(struct ulogd_pluginstance *upi)
 			fprintf(opi->of, "%" PRIu64 "\n", ret->u.value.ui64);
 			break;
 		case ULOGD_RET_IPADDR: {
-			char addrbuf[INET_ADDRSTRLEN + 1] = "";
+			char addrbuf[INET6_ADDRSTRLEN + 1] = "";
+			struct in6_addr ipv6addr;
 			struct in_addr ipv4addr;
+			int family;
+			void *addr;
 
-			ipv4addr.s_addr = ret->u.value.ui32;
-			if (!inet_ntop(AF_INET, &ipv4addr, addrbuf,
-				       sizeof(addrbuf)))
+			if (ret->len == sizeof(ipv6addr)) {
+				memcpy(ipv6addr.s6_addr, ret->u.value.ui128,
+				       sizeof(ipv6addr.s6_addr));
+				addr = &ipv6addr;
+				family = AF_INET6;
+			} else {
+				ipv4addr.s_addr = ret->u.value.ui32;
+				addr = &ipv4addr;
+				family = AF_INET;
+			}
+			if (!inet_ntop(family, addr, addrbuf, sizeof(addrbuf)))
 				break;
 
 			fprintf(opi->of, "%s\n", addrbuf);
