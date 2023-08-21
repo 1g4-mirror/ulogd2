@@ -134,36 +134,42 @@ static inline void okey_set_b(struct ulogd_key *key, uint8_t value)
 {
 	key->u.value.b = value;
 	key->flags |= ULOGD_RETF_VALID;
+	key->len = sizeof(key->u.value.b);
 }
 
 static inline void okey_set_u8(struct ulogd_key *key, uint8_t value)
 {
 	key->u.value.ui8 = value;
 	key->flags |= ULOGD_RETF_VALID;
+	key->len = sizeof(key->u.value.ui8);
 }
 
 static inline void okey_set_u16(struct ulogd_key *key, uint16_t value)
 {
 	key->u.value.ui16 = value;
 	key->flags |= ULOGD_RETF_VALID;
+	key->len = sizeof(key->u.value.ui16);
 }
 
 static inline void okey_set_u32(struct ulogd_key *key, uint32_t value)
 {
 	key->u.value.ui32 = value;
 	key->flags |= ULOGD_RETF_VALID;
+	key->len = sizeof(key->u.value.ui32);
 }
 
 static inline void okey_set_u64(struct ulogd_key *key, uint64_t value)
 {
 	key->u.value.ui64 = value;
 	key->flags |= ULOGD_RETF_VALID;
+	key->len = sizeof(key->u.value.ui64);
 }
 
 static inline void okey_set_u128(struct ulogd_key *key, const void *value)
 {
-	memcpy(key->u.value.ui128, value, 16);
+	memcpy(key->u.value.ui128, value, sizeof(key->u.value.ui128));
 	key->flags |= ULOGD_RETF_VALID;
+	key->len = sizeof(key->u.value.ui128);
 }
 
 static inline void okey_set_ptr(struct ulogd_key *key, void *value)
@@ -309,6 +315,7 @@ void __ulogd_log(int level, char *file, int line, const char *message, ...)
 #define SET_NEEDED(x)	(x.flags |= ULOGD_RETF_NEEDED)
 
 #define GET_FLAGS(res, x)	(res[x].u.source->flags)
+#define GET_LENGTH(res, x)	(res[x].u.source->len)
 #define pp_is_valid(res, x)	\
 	(res[x].u.source && (GET_FLAGS(res, x) & ULOGD_RETF_VALID))
 
