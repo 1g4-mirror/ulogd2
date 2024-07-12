@@ -1,7 +1,7 @@
 Userspace logging daemon for netfilter/iptables
 
-Project Homepage: http://www.gnumonks.org/projects/ulogd
-Mailinglist: http://lists.gnumonks.org/mailman/listinfo/ulogd/
+Project Homepage: https://www.netfilter.org/projects/ulogd/
+Mailinglist: netfilter@vger.kernel.org, archive at https://lore.kernel.org/netfilter/
 
 This is just a short README, pleaes see the more extensive documentation
 in the doc/ subdirectory.
