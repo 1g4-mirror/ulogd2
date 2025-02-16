@@ -83,6 +83,8 @@ static const struct config_keyset ipfix_kset = {
 	}
 };
 
+#define SEND_TIMER_INTERVAL_SEC	1
+
 struct ipfix_priv {
 	struct ulogd_fd ufd;
 	uint32_t seqno;
@@ -259,6 +261,8 @@ static void ipfix_timer_cb(struct ulogd_timer *t, void *data)
 		priv->msg = NULL;
 		send_msgs(pi);
 	}
+
+	ulogd_add_timer(&priv->timer, SEND_TIMER_INTERVAL_SEC);
 }
 
 static int ipfix_configure(struct ulogd_pluginstance *pi, struct ulogd_pluginstance_stack *stack)
@@ -394,8 +398,8 @@ static int ipfix_start(struct ulogd_pluginstance *pi)
 	if (ulogd_register_fd(&priv->ufd) < 0)
 		return ULOGD_IRET_ERR;
 
-	/* Add a 1 second timer */
-	ulogd_add_timer(&priv->timer, 1);
+	/* Start the repeating send timer */
+	ulogd_add_timer(&priv->timer, SEND_TIMER_INTERVAL_SEC);
 
 	return ULOGD_IRET_OK;
 }
