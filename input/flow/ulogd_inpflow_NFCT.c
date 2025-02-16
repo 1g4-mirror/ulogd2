@@ -1327,7 +1327,7 @@ static int constructor_nfct_events(struct ulogd_pluginstance *upi)
 		setsockopt(nfct_fd(cpi->cth), SOL_NETLINK,
 				NETLINK_NO_ENOBUFS, &on, sizeof(int));
 		ulogd_log(ULOGD_NOTICE, "NFCT reliable logging "
-					"has been enabled.");
+					"has been enabled.\n");
 	}
 	cpi->nfct_fd.fd = nfct_fd(cpi->cth);
 	cpi->nfct_fd.cb = &read_cb_nfct;
