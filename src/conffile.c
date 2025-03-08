@@ -143,7 +143,8 @@ int config_parse_file(const char *section, struct config_keyset *kset)
 		/* if line was fetch completely, string ends with '\n' */
 		if (! strchr(line, '\n')) {
 			ulogd_log(ULOGD_ERROR, "line %d too long.\n", linenum);
-			return -ERRTOOLONG;
+			err = -ERRTOOLONG;
+			goto cpf_error;
 		}
 
 		if (!(wordend = get_word(line, " \t\n\r[]", (char *) wordbuf)))
@@ -156,8 +157,8 @@ int config_parse_file(const char *section, struct config_keyset *kset)
 	}
 
 	if (!found) {
-		fclose(cfile);
-		return -ERRSECTION;
+		err = -ERRSECTION;
+		goto cpf_error;
 	}
 
 	/* Parse this section until next section */
@@ -175,7 +176,8 @@ int config_parse_file(const char *section, struct config_keyset *kset)
 		/* if line was fetch completely, string ends with '\n' */
 		if (! strchr(line, '\n')) {
 			ulogd_log(ULOGD_ERROR, "line %d too long.\n", linenum);
-			return -ERRTOOLONG;
+			err = -ERRTOOLONG;
+			goto cpf_error;
 		}
 
 		if (!(wordend = get_word(line, " =\t\n\r", (char *) &wordbuf)))
