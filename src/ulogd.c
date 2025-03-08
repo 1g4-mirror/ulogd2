@@ -1327,12 +1327,10 @@ static void stop_pluginstances()
 
 	llist_for_each_entry(stack, &ulogd_pi_stacks, stack_list) {
 		llist_for_each_entry_safe(pi, npi, &stack->list, list) {
-			if ((pi->plugin->priv_size > 0 || *pi->plugin->stop) &&
-			    pluginstance_stop(pi)) {
+			if (*pi->plugin->stop && pluginstance_stop(pi)) {
 				ulogd_log(ULOGD_DEBUG, "calling stop for %s\n",
 					  pi->plugin->name);
 				(*pi->plugin->stop)(pi);
-				pi->private[0] = 0;
 			}
 
 			/* NB: plugin->stop() might access other plugin instances,
