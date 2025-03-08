@@ -181,6 +181,8 @@ enum nfct_keys {
 	NFCT_REPLY_RAW_PKTCOUNT,
 	NFCT_ICMP_CODE,
 	NFCT_ICMP_TYPE,
+	NFCT_ICMPV6_CODE,
+	NFCT_ICMPV6_TYPE,
 	NFCT_CT_MARK,
 	NFCT_CT_ID,
 	NFCT_CT_EVENT,
@@ -340,6 +342,24 @@ static struct ulogd_key nfct_okeys[] = {
 		.ipfix	= {
 			.vendor		= IPFIX_VENDOR_IETF,
 			.field_id	= IPFIX_icmpTypeIPv4,
+		},
+	},
+	{
+		.type	= ULOGD_RET_UINT8,
+		.flags	= ULOGD_RETF_NONE,
+		.name	= "icmpv6.code",
+		.ipfix	= {
+			.vendor		= IPFIX_VENDOR_IETF,
+			.field_id	= IPFIX_icmpCodeIPv6,
+		},
+	},
+	{
+		.type	= ULOGD_RET_UINT8,
+		.flags	= ULOGD_RETF_NONE,
+		.name	= "icmpv6.type",
+		.ipfix	= {
+			.vendor		= IPFIX_VENDOR_IETF,
+			.field_id	= IPFIX_icmpTypeIPv6,
 		},
 	},
 	{
@@ -545,6 +565,12 @@ static int propagate_ct(struct ulogd_pluginstance *main_upi,
 		okey_set_u16(&ret[NFCT_ICMP_CODE],
 			     nfct_get_attr_u8(ct, ATTR_ICMP_CODE));
 		okey_set_u16(&ret[NFCT_ICMP_TYPE],
+			     nfct_get_attr_u8(ct, ATTR_ICMP_TYPE));
+		break;
+	case IPPROTO_ICMPV6:
+		okey_set_u16(&ret[NFCT_ICMPV6_CODE],
+			     nfct_get_attr_u8(ct, ATTR_ICMP_CODE));
+		okey_set_u16(&ret[NFCT_ICMPV6_TYPE],
 			     nfct_get_attr_u8(ct, ATTR_ICMP_TYPE));
 		break;
 	}
