@@ -198,6 +198,12 @@ int config_parse_file(const char *section, struct config_keyset *kset)
 			}
 
 			wordend = get_word(wordend, " =\t\n\r", (char *) &wordbuf);
+			if (wordend == NULL) {
+				ulogd_log(ULOGD_NOTICE,
+					"ignoring malformed config directive \"%s\" on line %d\n",
+					ce->key, linenum);
+				break;
+			}
 			args = (char *)&wordbuf;
 
 			if (ce->hit && !(ce->options & CONFIG_OPT_MULTI))
