@@ -660,7 +660,7 @@ event_handler_hashtable(enum nf_conntrack_msg_type type,
 
 	switch(type) {
 	case NFCT_T_NEW:
-		ts = calloc(sizeof(struct ct_timestamp), 1);
+		ts = calloc(1, sizeof(struct ct_timestamp));
 		if (ts == NULL)
 			return NFCT_CB_CONTINUE;
 
@@ -681,7 +681,7 @@ event_handler_hashtable(enum nf_conntrack_msg_type type,
 		if (ts)
 			nfct_copy(ts->ct, ct, NFCT_CP_META);
 		else {
-			ts = calloc(sizeof(struct ct_timestamp), 1);
+			ts = calloc(1, sizeof(struct ct_timestamp));
 			if (ts == NULL)
 				return NFCT_CB_CONTINUE;
 
@@ -771,7 +771,7 @@ polling_handler(enum nf_conntrack_msg_type type,
 		if (ts)
 			nfct_copy(ts->ct, ct, NFCT_CP_META);
 		else {
-			ts = calloc(sizeof(struct ct_timestamp), 1);
+			ts = calloc(1, sizeof(struct ct_timestamp));
 			if (ts == NULL)
 				return NFCT_CB_CONTINUE;
 
@@ -908,7 +908,7 @@ static int overrun_handler(enum nf_conntrack_msg_type type,
 	ts = (struct ct_timestamp *)
 		hashtable_find(cpi->ct_active, ct, id);
 	if (ts == NULL) {
-		ts = calloc(sizeof(struct ct_timestamp), 1);
+		ts = calloc(1, sizeof(struct ct_timestamp));
 		if (ts == NULL)
 			return NFCT_CB_CONTINUE;
 
@@ -971,7 +971,7 @@ dump_reset_handler(enum nf_conntrack_msg_type type,
 		if (ts)
 			nfct_copy(ts->ct, ct, NFCT_CP_META);
 		else {
-			ts = calloc(sizeof(struct ct_timestamp), 1);
+			ts = calloc(1, sizeof(struct ct_timestamp));
 			if (ts == NULL)
 				return NFCT_CB_CONTINUE;
 
