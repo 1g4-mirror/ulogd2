@@ -158,7 +158,12 @@ int config_parse_file(const char *section, struct config_keyset *kset)
 	}
 
 	if (!found) {
-		err = -ERRSECTION;
+		if (kset->num_ces == 0) {
+			/* If there are no options, then no section isnt an error. */
+			err = 0;
+		} else {
+			err = -ERRSECTION;
+		}
 		goto cpf_error;
 	}
 

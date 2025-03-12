@@ -856,19 +856,29 @@ create_stack_resolve_keys(struct ulogd_pluginstance_stack *stack)
 
 	/* pre-configuration pass */
 	llist_for_each_entry_reverse(pi_cur, &stack->list, list) {
+		int ret;
+
 		ulogd_log(ULOGD_DEBUG, "traversing plugin `%s'\n", 
 			  pi_cur->plugin->name);
 		/* call plugin to tell us which keys it requires in
 		 * given configuration */
 		if (pi_cur->plugin->configure) {
-			int ret = pi_cur->plugin->configure(pi_cur, 
-							    stack);
-			if (ret < 0) {
-				ulogd_log(ULOGD_ERROR, "error during "
-					  "configure of plugin %s\n",
-					  pi_cur->plugin->name);
-				return ret;
-			}
+			ret = pi_cur->plugin->configure(pi_cur, stack);
+		} else {
+			struct config_keyset empty_kset = {.num_ces=0};
+			struct config_keyset *kset = &empty_kset;
+
+			if (pi_cur->config_kset)
+				kset = pi_cur->config_kset;
+
+			ret = ulogd_parse_configfile(pi_cur->id, kset);
+		}
+
+		if (ret < 0) {
+			ulogd_log(ULOGD_ERROR, "error during "
+				  "configure of plugin %s\n",
+				  pi_cur->plugin->name);
+			return ret;
 		}
 	}
 
