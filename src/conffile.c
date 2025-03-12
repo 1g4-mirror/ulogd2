@@ -256,6 +256,18 @@ int config_parse_file(const char *section, struct config_keyset *kset)
 			break;
 		}
 		pr_debug("parse_file: exiting main loop\n");
+
+		if (i == kset->num_ces) {
+			config_errce = calloc(1, sizeof(struct config_entry));
+			if (config_errce == NULL) {
+				err = -ERROOM;
+				goto cpf_error;
+			}
+			memcpy(&config_errce->key[0], wordbuf,
+			       sizeof(config_errce->key) - 1);
+			err = -ERRUNKN;
+			goto cpf_error;
+		}
 	}
 
 

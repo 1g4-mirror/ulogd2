@@ -281,6 +281,8 @@ int ulogd_parse_configfile(const char *section, struct config_keyset *ce)
 	case -ERRUNKN:
 		ulogd_log(ULOGD_ERROR, "unknown config key \"%s\"\n",
 		          config_errce->key);
+		free(config_errce);
+		config_errce = NULL;
 		break;
 	case -ERRSECTION:
 		ulogd_log(ULOGD_ERROR, "section \"%s\" not found\n", section);
