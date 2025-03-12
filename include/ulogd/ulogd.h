@@ -362,6 +362,7 @@ void __ulogd_log(int level, char *file, int line, const char *message, ...)
 
 int ulogd_key_size(struct ulogd_key *key);
 int ulogd_wildcard_inputkeys(struct ulogd_pluginstance *upi);
+int ulogd_parse_configfile(const char *section, struct config_keyset *ce);
 
 /***********************************************************************
  * file descriptor handling

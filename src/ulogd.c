@@ -251,6 +251,53 @@ int ulogd_wildcard_inputkeys(struct ulogd_pluginstance *upi)
 	return 0;
 }
 
+/**
+ * Parse the given section in the config file into the given keyset.
+ * Returns ULOGD_IRET_OK on success, ULOGD_IRET_ERR on error.
+ * If an error occurs, writes a descriptive message to the log.
+ */
+int ulogd_parse_configfile(const char *section, struct config_keyset *ce)
+{
+	int err;
+
+	err = config_parse_file(section, ce);
+
+	switch(err) {
+	case 0:
+		return ULOGD_IRET_OK;
+		break;
+	case -ERROPEN:
+		ulogd_log(ULOGD_ERROR, "unable to open configfile: %s\n",
+			  ulogd_configfile);
+		break;
+	case -ERRMAND:
+		ulogd_log(ULOGD_ERROR, "mandatory option \"%s\" not found\n",
+			  config_errce->key);
+		break;
+	case -ERRMULT:
+		ulogd_log(ULOGD_ERROR, "option \"%s\" occurred more than once\n",
+		          config_errce->key);
+		break;
+	case -ERRUNKN:
+		ulogd_log(ULOGD_ERROR, "unknown config key \"%s\"\n",
+		          config_errce->key);
+		break;
+	case -ERRSECTION:
+		ulogd_log(ULOGD_ERROR, "section \"%s\" not found\n", section);
+		break;
+	case -ERRTOOLONG:
+		if (config_errce != NULL)
+			ulogd_log(ULOGD_ERROR,
+			          "string value too long for key \"%s\"\n",
+			          config_errce->key);
+		else
+			ulogd_log(ULOGD_ERROR, "string value is too long\n");
+		break;
+	}
+
+	return ULOGD_IRET_ERR;
+}
+
 
 /***********************************************************************
  * PLUGIN MANAGEMENT 
@@ -1098,54 +1145,6 @@ static int logfile_open(const char *name)
 	return 0;
 }
 
-/* wrapper to handle conffile error codes */
-static int parse_conffile(const char *section, struct config_keyset *ce)
-{
-	int err;
-
-	err = config_parse_file(section, ce);
-
-	switch(err) {
-		case 0:
-			return 0;
-			break;
-		case -ERROPEN:
-			ulogd_log(ULOGD_ERROR,
-				"unable to open configfile: %s\n",
-				ulogd_configfile);
-			break;
-		case -ERRMAND:
-			ulogd_log(ULOGD_ERROR,
-				"mandatory option \"%s\" not found\n",
-				config_errce->key);
-			break;
-		case -ERRMULT:
-			ulogd_log(ULOGD_ERROR,
-				"option \"%s\" occurred more than once\n",
-				config_errce->key);
-			break;
-		case -ERRUNKN:
-			ulogd_log(ULOGD_ERROR,
-				"unknown config key \"%s\"\n",
-				config_errce->key);
-			break;
-		case -ERRSECTION:
-			ulogd_log(ULOGD_ERROR,
-				"section \"%s\" not found\n", section);
-			break;
-		case -ERRTOOLONG:
-			if (config_errce)
-				ulogd_log(ULOGD_ERROR,
-					  "string value too long for key \"%s\"\n",
-					  config_errce->key);
-			else
-				ulogd_log(ULOGD_ERROR,
-					  "string value is too long\n");
-			break;
-	}
-	return 1;
-}
-
 /*
  * Apply F_WRLCK to fd using fcntl().
  *
@@ -1592,7 +1591,7 @@ int main(int argc, char* argv[])
 	}
 
 	/* parse config file */
-	if (parse_conffile("global", &ulogd_kset)) {
+	if (ulogd_parse_configfile("global", &ulogd_kset)) {
 		ulogd_log(ULOGD_FATAL, "unable to parse config file\n");
 		warn_and_exit(daemonize);
 	}
