@@ -293,6 +293,16 @@ int ulogd_parse_configfile(const char *section, struct config_keyset *ce)
 		else
 			ulogd_log(ULOGD_ERROR, "string value is too long\n");
 		break;
+	case -ERRINTFORMAT:
+		ulogd_log(ULOGD_ERROR,
+		          "integer has invalid format for key \"%s\"\n",
+		          config_errce->key);
+		break;
+	case -ERRINTRANGE:
+		ulogd_log(ULOGD_ERROR,
+		          "integer is out of range for key \"%s\"\n",
+		          config_errce->key);
+		break;
 	}
 
 	return ULOGD_IRET_ERR;

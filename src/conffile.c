@@ -17,6 +17,7 @@
  *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  */
 
+#include <limits.h>
 #include <ulogd/ulogd.h>
 #include <ulogd/common.h>
 #include <ulogd/conffile.h>
@@ -227,7 +228,21 @@ int config_parse_file(const char *section, struct config_keyset *kset)
 					}
 					break;
 				case CONFIG_TYPE_INT:
-					ce->u.value = strtoul(args, NULL, 0);
+					errno = 0;
+					char *endptr = NULL;
+					long parsed = strtol(args, &endptr, 0);
+					if (endptr == args || *endptr != '\0') {
+						config_errce = ce;
+						err = -ERRINTFORMAT;
+						goto cpf_error;
+					}
+					if (errno == ERANGE ||
+					    parsed < INT_MIN || parsed > INT_MAX) {
+						config_errce = ce;
+						err = -ERRINTRANGE;
+						goto cpf_error;
+					}
+					ce->u.value = (int)parsed;
 					break;
 				case CONFIG_TYPE_CALLBACK:
 					(ce->u.parser)(args);

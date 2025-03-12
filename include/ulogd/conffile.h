@@ -19,6 +19,8 @@ enum {
 	ERRUNKN,	/* unknown config key */
 	ERRSECTION,	/* section not found */
 	ERRTOOLONG,	/* string too long */
+	ERRINTFORMAT,	/* integer format is invalid */
+	ERRINTRANGE,	/* integer value is out of range */
 };
 
 /* maximum line length of config file entries */
