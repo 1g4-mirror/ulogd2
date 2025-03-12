@@ -94,8 +94,7 @@ static int configure(struct ulogd_pluginstance *upi,
 	ulogd_log(ULOGD_DEBUG, "parsing config file section `%s', "
 		  "plugin `%s'\n", upi->id, upi->plugin->name);
 
-	config_parse_file(upi->id, upi->config_kset);
-	return 0;
+	return ulogd_parse_configfile(upi->id, upi->config_kset);
 }
 
 static struct ulogd_plugin mark_pluging = {

@@ -363,7 +363,8 @@ sqlite3_configure(struct ulogd_pluginstance *pi,
 {
 	/* struct sqlite_priv *priv = (void *)pi->private; */
 
-	config_parse_file(pi->id, pi->config_kset);
+	if (ulogd_parse_configfile(pi->id, pi->config_kset) < 0)
+		return -1;
 
 	if (ulogd_wildcard_inputkeys(pi) < 0)
 		return -1;

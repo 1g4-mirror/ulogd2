@@ -153,7 +153,7 @@ int ulogd_db_configure(struct ulogd_pluginstance *upi,
 	ulogd_log(ULOGD_NOTICE, "(re)configuring\n");
 
 	/* First: Parse configuration file section for this instance */
-	ret = config_parse_file(upi->id, upi->config_kset);
+	ret = ulogd_parse_configfile(upi->id, upi->config_kset);
 	if (ret < 0) {
 		ulogd_log(ULOGD_ERROR, "error parsing config file\n");
 		return ret;

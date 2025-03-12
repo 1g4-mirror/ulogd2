@@ -260,7 +260,7 @@ static void signal_pcap(struct ulogd_pluginstance *upi, int signal)
 static int configure_pcap(struct ulogd_pluginstance *upi,
 			  struct ulogd_pluginstance_stack *stack)
 {
-	return config_parse_file(upi->id, upi->config_kset);
+	return ulogd_parse_configfile(upi->id, upi->config_kset);
 }
 
 static int start_pcap(struct ulogd_pluginstance *upi)

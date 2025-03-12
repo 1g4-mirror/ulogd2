@@ -83,12 +83,13 @@ static int _output_syslog(struct ulogd_pluginstance *upi)
 static int syslog_configure(struct ulogd_pluginstance *pi,
 			    struct ulogd_pluginstance_stack *stack)
 {
-	int syslog_facility, syslog_level;
+	int syslog_facility, syslog_level, ret;
 	char *facility, *level;
 	struct syslog_instance *li = (struct syslog_instance *) &pi->private;
 
-	/* FIXME: error handling */
-	config_parse_file(pi->id, pi->config_kset);
+	ret = ulogd_parse_configfile(pi->id, pi->config_kset);
+	if (ret < 0)
+		return ret;
 
 	facility = pi->config_kset->ces[0].u.string;
 	level = pi->config_kset->ces[1].u.string;

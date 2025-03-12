@@ -269,7 +269,7 @@ static int ulog_read_cb(int fd, unsigned int what, void *param)
 static int configure(struct ulogd_pluginstance *upi,
 		     struct ulogd_pluginstance_stack *stack)
 {
-	return config_parse_file(upi->id, upi->config_kset);
+	return ulogd_parse_configfile(upi->id, upi->config_kset);
 }
 static int init(struct ulogd_pluginstance *upi)
 {

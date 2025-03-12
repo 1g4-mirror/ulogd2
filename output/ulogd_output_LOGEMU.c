@@ -178,7 +178,7 @@ static int configure_logemu(struct ulogd_pluginstance *pi,
 			    struct ulogd_pluginstance_stack *stack)
 {
 	ulogd_log(ULOGD_DEBUG, "parsing config file section %s\n", pi->id);
-	return config_parse_file(pi->id, pi->config_kset);
+	return ulogd_parse_configfile(pi->id, pi->config_kset);
 }
 
 static struct ulogd_plugin logemu_plugin = { 

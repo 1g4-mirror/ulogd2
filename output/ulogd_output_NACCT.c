@@ -203,7 +203,7 @@ nacct_conf(struct ulogd_pluginstance *pi,
 {
 	int ret;
 
-	if ((ret = config_parse_file(pi->id, pi->config_kset)) < 0)
+	if ((ret = ulogd_parse_configfile(pi->id, pi->config_kset)) < 0)
 		return ret;
 
 	return 0;

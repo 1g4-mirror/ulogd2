@@ -1054,7 +1054,7 @@ static int configure_nfct(struct ulogd_pluginstance *upi,
 {
 	int ret;
 
-	ret = config_parse_file(upi->id, upi->config_kset);
+	ret = ulogd_parse_configfile(upi->id, upi->config_kset);
 	if (ret < 0)
 		return ret;
 

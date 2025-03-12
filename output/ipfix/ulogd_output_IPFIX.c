@@ -272,7 +272,7 @@ static int ipfix_configure(struct ulogd_pluginstance *pi, struct ulogd_pluginsta
 	int oid, port, mtu, ret;
 	char addr[16];
 
-	ret = config_parse_file(pi->id, pi->config_kset);
+	ret = ulogd_parse_configfile(pi->id, pi->config_kset);
 	if (ret < 0)
 		return ret;
 
