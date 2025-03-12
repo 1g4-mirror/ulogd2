@@ -185,18 +185,6 @@ static int xml_output(struct ulogd_pluginstance *upi)
 	return ULOGD_IRET_OK;
 }
 
-static int xml_configure(struct ulogd_pluginstance *upi,
-			 struct ulogd_pluginstance_stack *stack)
-{
-	int ret;
-
-	ret = ulogd_parse_configfile(upi->id, upi->config_kset);
-	if (ret < 0)
-		return ret;
-
-	return 0;
-}
-
 static int xml_fini(struct ulogd_pluginstance *pi)
 {
 	struct xml_priv *op = (struct xml_priv *) &pi->private;
@@ -332,8 +320,7 @@ static struct ulogd_plugin xml_plugin = {
 	},
 	.config_kset	= &xml_kset,
 	.priv_size	= sizeof(struct xml_priv),
-	
-	.configure	= &xml_configure,
+
 	.start		= &xml_start,
 	.stop		= &xml_fini,
 	.interp		= &xml_output,

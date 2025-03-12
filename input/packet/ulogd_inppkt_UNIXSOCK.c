@@ -713,15 +713,6 @@ static int unixsock_server_read_cb(int fd, unsigned int what, void *param)
 	return 0;
 }
 
-static int configure(struct ulogd_pluginstance *upi,
-		     struct ulogd_pluginstance_stack *stack)
-{
-	ulogd_log(ULOGD_DEBUG, "parsing config file section `%s', "
-		  "plugin `%s'\n", upi->id, upi->plugin->name);
-
-	return ulogd_parse_configfile(upi->id, upi->config_kset);
-}
-
 static int start(struct ulogd_pluginstance *upi)
 {
 	struct unixsock_input *ui = (struct unixsock_input *) upi->private;
@@ -809,7 +800,6 @@ struct ulogd_plugin libunixsock_plugin = {
 		.num_keys = ARRAY_SIZE(output_keys),
 	},
 	.priv_size 	= sizeof(struct unixsock_input),
-	.configure 	= &configure,
 	.start 		= &start,
 	.stop 		= &stop,
 	.config_kset 	= &libunixsock_kset,

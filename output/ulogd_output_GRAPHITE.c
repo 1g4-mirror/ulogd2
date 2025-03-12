@@ -210,13 +210,6 @@ static int fini_graphite(struct ulogd_pluginstance *pi) {
 	return 0;
 }
 
-static int configure_graphite(struct ulogd_pluginstance *pi,
-			    struct ulogd_pluginstance_stack *stack)
-{
-	ulogd_log(ULOGD_DEBUG, "parsing config file section %s\n", pi->id);
-	return ulogd_parse_configfile(pi->id, pi->config_kset);
-}
-
 static struct ulogd_plugin graphite_plugin = {
 	.name = "GRAPHITE",
 	.input = {
@@ -230,7 +223,6 @@ static struct ulogd_plugin graphite_plugin = {
 	.config_kset 	= &graphite_kset,
 	.priv_size 	= sizeof(struct graphite_instance),
 
-	.configure	= &configure_graphite,
 	.start	 	= &start_graphite,
 	.stop	 	= &fini_graphite,
 

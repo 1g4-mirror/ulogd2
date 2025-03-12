@@ -1049,18 +1049,6 @@ static void polling_timer_cb(struct ulogd_timer *t, void *data)
 	ulogd_add_timer(&cpi->timer, pollint_ce(upi->config_kset).u.value);
 }
 
-static int configure_nfct(struct ulogd_pluginstance *upi,
-			  struct ulogd_pluginstance_stack *stack)
-{
-	int ret;
-
-	ret = ulogd_parse_configfile(upi->id, upi->config_kset);
-	if (ret < 0)
-		return ret;
-
-	return 0;
-}
-
 static void overrun_timeout(struct ulogd_timer *a, void *data)
 {
 	int family = AF_UNSPEC;
@@ -1577,7 +1565,6 @@ static struct ulogd_plugin nfct_plugin = {
 	},
 	.config_kset 	= &nfct_kset,
 	.interp 	= NULL,
-	.configure	= &configure_nfct,
 	.start		= &constructor_nfct,
 	.stop		= &destructor_nfct,
 	.signal		= &signal_nfct,

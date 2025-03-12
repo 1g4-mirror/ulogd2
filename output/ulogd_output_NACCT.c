@@ -198,18 +198,6 @@ sighup_handler_print(struct ulogd_pluginstance *pi, int signal)
 }
 
 static int
-nacct_conf(struct ulogd_pluginstance *pi,
-		   struct ulogd_pluginstance_stack *stack)
-{
-	int ret;
-
-	if ((ret = ulogd_parse_configfile(pi->id, pi->config_kset)) < 0)
-		return ret;
-
-	return 0;
-}
-
-static int
 nacct_init(struct ulogd_pluginstance *pi)
 {
 	struct nacct_priv *op = (struct nacct_priv *)&pi->private;
@@ -243,7 +231,6 @@ static struct ulogd_plugin nacct_plugin = {
 	.output = {
 		.type = ULOGD_DTYPE_SINK,
 	},
-	.configure = &nacct_conf,
 	.interp	= &nacct_interp,
 	.start 	= &nacct_init,
 	.stop	= &nacct_fini,

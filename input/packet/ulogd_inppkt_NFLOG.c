@@ -551,15 +551,6 @@ release_ct:
 	return ret;
 }
 
-static int configure(struct ulogd_pluginstance *upi,
-		     struct ulogd_pluginstance_stack *stack)
-{
-	ulogd_log(ULOGD_DEBUG, "parsing config file section `%s', "
-		  "plugin `%s'\n", upi->id, upi->plugin->name);
-
-	return ulogd_parse_configfile(upi->id, upi->config_kset);
-}
-
 static int become_system_logging(struct ulogd_pluginstance *upi, uint8_t pf)
 {
 	struct nflog_input *ui = (struct nflog_input *) upi->private;
@@ -723,7 +714,6 @@ struct ulogd_plugin libulog_plugin = {
 		.num_keys = ARRAY_SIZE(output_keys),
 	},
 	.priv_size 	= sizeof(struct nflog_input),
-	.configure 	= &configure,
 	.start 		= &start,
 	.stop 		= &stop,
 	.config_kset 	= &libulog_kset,

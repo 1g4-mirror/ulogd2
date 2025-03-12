@@ -174,13 +174,6 @@ static int fini_logemu(struct ulogd_pluginstance *pi) {
 	return 0;
 }
 
-static int configure_logemu(struct ulogd_pluginstance *pi,
-			    struct ulogd_pluginstance_stack *stack)
-{
-	ulogd_log(ULOGD_DEBUG, "parsing config file section %s\n", pi->id);
-	return ulogd_parse_configfile(pi->id, pi->config_kset);
-}
-
 static struct ulogd_plugin logemu_plugin = { 
 	.name = "LOGEMU",
 	.input = {
@@ -194,7 +187,6 @@ static struct ulogd_plugin logemu_plugin = {
 	.config_kset 	= &logemu_kset,
 	.priv_size 	= sizeof(struct logemu_instance),
 
-	.configure	= &configure_logemu,
 	.start	 	= &start_logemu,
 	.stop	 	= &fini_logemu,
 

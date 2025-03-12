@@ -266,11 +266,6 @@ static int ulog_read_cb(int fd, unsigned int what, void *param)
 	return 0;
 }
 
-static int configure(struct ulogd_pluginstance *upi,
-		     struct ulogd_pluginstance_stack *stack)
-{
-	return ulogd_parse_configfile(upi->id, upi->config_kset);
-}
 static int init(struct ulogd_pluginstance *upi)
 {
 	struct ulog_input *ui = (struct ulog_input *) &upi->private;
@@ -325,7 +320,6 @@ struct ulogd_plugin libulog_plugin = {
 		.keys = output_keys,
 		.num_keys = ARRAY_SIZE(output_keys),
 	},
-	.configure = &configure,
 	.start = &init,
 	.stop = &fini,
 	.config_kset = &libulog_kset,
