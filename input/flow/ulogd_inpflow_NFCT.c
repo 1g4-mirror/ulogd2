@@ -989,6 +989,9 @@ dump_reset_handler(enum nf_conntrack_msg_type type,
 	int ret = NFCT_CB_CONTINUE, rc, id;
 	struct ct_timestamp *ts;
 
+	if (!cpi->ct_active)
+		return NFCT_CB_STOP;
+
 	switch(type) {
 	case NFCT_T_UPDATE:
 		id = hashtable_hash(cpi->ct_active, ct);
