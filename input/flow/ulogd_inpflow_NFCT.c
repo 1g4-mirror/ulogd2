@@ -911,6 +911,7 @@ static int do_purge(void *data1, void *data2)
 	/* if it is not in kernel anymore, purge it */
 	ret = nfct_query(cpi->pgh, NFCT_Q_GET, ts->ct);
 	if (ret == -1 && errno == ENOENT) {
+		set_timestamp_from_ct(ts, ts->ct, STOP);
 		do_propagate_ct(upi, ts->ct, NFCT_T_DESTROY, ts);
 		hashtable_del(cpi->ct_active, &ts->hashnode);
 		nfct_destroy(ts->ct);
