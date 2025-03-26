@@ -20,6 +20,7 @@
 
 #include <ulogd/ulogd.h>
 #include <ulogd/timer.h>
+#include <ulogd/namespace.h>
 
 #include <libmnl/libmnl.h>
 #include <libnetfilter_acct/libnetfilter_acct.h>
@@ -52,13 +53,19 @@ static struct config_keyset nfacct_kset = {
 			.type	 = CONFIG_TYPE_INT,
 			.options = CONFIG_OPT_NONE,
 			.u.value = 0,
-		}
+		},
+		{
+			.key	 = "network_namespace_path",
+			.type	 = CONFIG_TYPE_STRING,
+			.options = CONFIG_OPT_NONE,
+		},
 	},
-	.num_ces = 3,
+	.num_ces = 4,
 };
 #define pollint_ce(x)	(x->ces[0])
 #define zerocounter_ce(x) (x->ces[1])
 #define timestamp_ce(x) (x->ces[2])
+#define network_namespace_path_ce(x) (x->ces[3])
 
 enum ulogd_nfacct_keys {
 	ULOGD_NFACCT_NAME,
@@ -240,11 +247,33 @@ static int constructor_nfacct(struct ulogd_pluginstance *upi)
 	if (pollint_ce(upi->config_kset).u.value == 0)
 		return -1;
 
+	const char *const target_netns_path =
+			network_namespace_path_ce(upi->config_kset).u.string;
+	int source_netns_fd = -1;
+	if ((strlen(target_netns_path) > 0) &&
+	    (join_netns_path(target_netns_path, &source_netns_fd) != ULOGD_IRET_OK)
+	   ) {
+		ulogd_log(ULOGD_FATAL, "error joining target network "
+		                       "namespace\n");
+		return -1;
+	}
+
 	cpi->nl = mnl_socket_open(NETLINK_NETFILTER);
 	if (cpi->nl == NULL) {
 		ulogd_log(ULOGD_FATAL, "cannot open netlink socket\n");
 		return -1;
 	}
+
+	if ((strlen(target_netns_path) > 0) &&
+	    (join_netns_fd(source_netns_fd, NULL) != ULOGD_IRET_OK)
+	   ) {
+		ulogd_log(ULOGD_FATAL, "error joining source network "
+		                       "namespace\n");
+		close(source_netns_fd);
+		return -1;
+	}
+	/* join_netns_fd() closes the fd after successful join */
+	source_netns_fd = -1;
 
 	if (mnl_socket_bind(cpi->nl, 0, MNL_SOCKET_AUTOPID) < 0) {
 		ulogd_log(ULOGD_FATAL, "cannot bind netlink socket\n");
