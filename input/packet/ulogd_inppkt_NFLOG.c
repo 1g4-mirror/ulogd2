@@ -10,6 +10,7 @@
 #include <stdbool.h>
 
 #include <ulogd/ulogd.h>
+#include <ulogd/namespace.h>
 #include <libnfnetlink/libnfnetlink.h>
 #include <libnetfilter_log/libnetfilter_log.h>
 #ifdef BUILD_NFCT
@@ -40,7 +41,7 @@ struct nflog_input {
 /* configuration entries */
 
 static struct config_keyset libulog_kset = {
-	.num_ces = 12,
+	.num_ces = 13,
 	.ces = {
 		{
 			.key 	 = "bufsize",
@@ -115,6 +116,11 @@ static struct config_keyset libulog_kset = {
 			.options = CONFIG_OPT_NONE,
 			.u.value = 0,
 		},
+		{
+			.key     = "network_namespace_path",
+			.type    = CONFIG_TYPE_STRING,
+			.options = CONFIG_OPT_NONE,
+		},
 	}
 };
 
@@ -130,6 +136,7 @@ static struct config_keyset libulog_kset = {
 #define nlthreshold_ce(x) (x->ces[9])
 #define nltimeout_ce(x) (x->ces[10])
 #define attach_conntrack_ce(x) (x->ces[11])
+#define network_namespace_path_ce(x) (x->ces[12])
 
 enum nflog_keys {
 	NFLOG_KEY_RAW_MAC = 0,
@@ -585,10 +592,31 @@ static int start(struct ulogd_pluginstance *upi)
 	if (!ui->nfulog_buf)
 		goto out_buf;
 
+	const char *const target_netns_path =
+			network_namespace_path_ce(upi->config_kset).u.string;
+	int source_netns_fd = -1;
+	if ((strlen(target_netns_path) > 0) &&
+	    (join_netns_path(target_netns_path, &source_netns_fd) != ULOGD_IRET_OK)
+	   ) {
+		ulogd_log(ULOGD_FATAL, "error joining target network "
+		                       "namespace\n");
+		goto out_ns;
+	}
+
 	ulogd_log(ULOGD_DEBUG, "opening nfnetlink socket\n");
 	ui->nful_h = nflog_open();
 	if (!ui->nful_h)
 		goto out_handle;
+
+	if ((strlen(target_netns_path) > 0) &&
+	    (join_netns_fd(source_netns_fd, NULL) != ULOGD_IRET_OK)
+	   ) {
+		ulogd_log(ULOGD_FATAL, "error joining source network "
+		                       "namespace\n");
+		goto out_handle;
+	}
+	/* join_netns_fd() closes the fd after successful join */
+	source_netns_fd = -1;
 
 	/* This is the system logging (conntrack, ...) facility */
 	if ((group_ce(upi->config_kset).u.value == 0) ||
@@ -685,6 +713,8 @@ out_bind:
 	}
 	nflog_close(ui->nful_h);
 out_handle:
+	if (source_netns_fd >= 0) close(source_netns_fd);
+out_ns:
 	free(ui->nfulog_buf);
 out_buf:
 	return -1;
