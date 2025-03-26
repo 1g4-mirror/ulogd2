@@ -45,6 +45,7 @@
 #include <ulogd/timer.h>
 #include <ulogd/ipfix_protocol.h>
 #include <ulogd/addr.h>
+#include <ulogd/namespace.h>
 
 #include <libnetfilter_conntrack/libnetfilter_conntrack.h>
 
@@ -78,7 +79,7 @@ struct nfct_pluginstance {
 #define EVENT_MASK	NF_NETLINK_CONNTRACK_NEW | NF_NETLINK_CONNTRACK_DESTROY
 
 static struct config_keyset nfct_kset = {
-	.num_ces = 12,
+	.num_ces = 13,
 	.ces = {
 		{
 			.key	 = "pollinterval",
@@ -149,6 +150,11 @@ static struct config_keyset nfct_kset = {
 			.type	 = CONFIG_TYPE_STRING,
 			.options = CONFIG_OPT_NONE,
 		},
+		{
+			.key     = "network_namespace_path",
+			.type    = CONFIG_TYPE_STRING,
+			.options = CONFIG_OPT_NONE,
+		},
 	},
 };
 #define pollint_ce(x)	(x->ces[0])
@@ -163,6 +169,7 @@ static struct config_keyset nfct_kset = {
 #define src_filter_ce(x)	((x)->ces[9])
 #define dst_filter_ce(x)	((x)->ces[10])
 #define proto_filter_ce(x)	((x)->ces[11])
+#define network_namespace_path_ce(x)	((x)->ces[12])
 
 enum nfct_keys {
 	NFCT_ORIG_IP_SADDR = 0,
@@ -980,6 +987,55 @@ static int read_cb_ovh(int fd, unsigned int what, void *param)
 	return 0;
 }
 
+/**
+ * nfct_open_in_netns() - Open conntrack netlink socket in a namespace
+ * @subscriptions: ctnetlink groups to subscribe to events
+ * @target_netns_path: path to the network namespace, can be NULL
+ *
+ * On error, NULL is returned and errno is explicitly set.
+ */
+struct nfct_handle *nfct_open_in_netns(unsigned int subscriptions,
+                                       const char *const target_netns_path)
+{
+	struct nfct_handle *result = NULL;
+	int source_netns_fd = -1;
+
+	if ((target_netns_path != NULL) &&
+	    (strlen(target_netns_path) > 0) &&
+	    (join_netns_path(target_netns_path, &source_netns_fd) != ULOGD_IRET_OK)) {
+		ulogd_log(ULOGD_FATAL, "error joining target network "
+		                       "namespace\n");
+		goto err_tns;
+	}
+
+	result = nfct_open(NFNL_SUBSYS_CTNETLINK, subscriptions);
+	if (result == NULL) {
+		ulogd_log(ULOGD_FATAL, "error opening ctnetlink: %s\n",
+		                       strerror(errno));
+		goto err_nfct;
+	}
+
+	if ((target_netns_path != NULL) &&
+	    (strlen(target_netns_path) > 0) &&
+	    (join_netns_fd(source_netns_fd, NULL) != ULOGD_IRET_OK)) {
+		ulogd_log(ULOGD_FATAL, "error joining source network "
+		                       "namespace\n");
+		goto err_sns;
+	}
+	/* join_netns_fd() closes the fd after successful join */
+	source_netns_fd = -1;
+
+	return result;
+
+err_sns:
+	nfct_close(result);
+err_nfct:
+	if (source_netns_fd >= 0)
+		close(source_netns_fd);
+err_tns:
+	return NULL;
+}
+
 static int
 dump_reset_handler(enum nf_conntrack_msg_type type,
 		   struct nf_conntrack *ct, void *data)
@@ -1029,7 +1085,7 @@ static void get_ctr_zero(struct ulogd_pluginstance *upi)
 	struct nfct_handle *h;
 	int family = AF_UNSPEC;
 
-	h = nfct_open(CONNTRACK, 0);
+	h = nfct_open_in_netns(0, network_namespace_path_ce(upi->config_kset).u.string);
 	if (h == NULL) {
 		ulogd_log(ULOGD_FATAL, "Cannot dump and reset counters\n");
 		return;
@@ -1305,10 +1361,10 @@ static int constructor_nfct_events(struct ulogd_pluginstance *upi)
 			(struct nfct_pluginstance *)upi->private;
 
 
-	cpi->cth = nfct_open(NFNL_SUBSYS_CTNETLINK,
-			     eventmask_ce(upi->config_kset).u.value);
+	cpi->cth = nfct_open_in_netns(eventmask_ce(upi->config_kset).u.value,
+	                              network_namespace_path_ce(upi->config_kset).u.string);
 	if (!cpi->cth) {
-		ulogd_log(ULOGD_FATAL, "error opening ctnetlink\n");
+		ulogd_log(ULOGD_FATAL, "error opening event netlink socket\n");
 		goto err_cth;
 	}
 
@@ -1376,9 +1432,9 @@ static int constructor_nfct_events(struct ulogd_pluginstance *upi)
 		/* populate the hashtable: we use a disposable handler, we
 		 * may hit overrun if we use cpi->cth. This ensures that the
 		 * initial dump is successful. */
-		h = nfct_open(CONNTRACK, 0);
+		h = nfct_open_in_netns(0, network_namespace_path_ce(upi->config_kset).u.string);
 		if (!h) {
-			ulogd_log(ULOGD_FATAL, "error opening ctnetlink\n");
+			ulogd_log(ULOGD_FATAL, "error opening initial-fill netlink socket\n");
 			goto err_ovh;
 		}
 		nfct_callback_register(h, NFCT_T_ALL,
@@ -1388,9 +1444,9 @@ static int constructor_nfct_events(struct ulogd_pluginstance *upi)
 
 		/* the overrun handler only make sense with the hashtable,
 		 * if we hit overrun, we resync with ther kernel table. */
-		cpi->ovh = nfct_open(NFNL_SUBSYS_CTNETLINK, 0);
+		cpi->ovh = nfct_open_in_netns(0, network_namespace_path_ce(upi->config_kset).u.string);
 		if (!cpi->ovh) {
-			ulogd_log(ULOGD_FATAL, "error opening ctnetlink\n");
+			ulogd_log(ULOGD_FATAL, "error opening overrun-read netlink socket\n");
 			goto err_ovh;
 		}
 
@@ -1407,9 +1463,9 @@ static int constructor_nfct_events(struct ulogd_pluginstance *upi)
 		ulogd_register_fd(&cpi->nfct_ov);
 
 		/* we use this to purge old entries during overruns.*/
-		cpi->pgh = nfct_open(NFNL_SUBSYS_CTNETLINK, 0);
+		cpi->pgh = nfct_open_in_netns(0, network_namespace_path_ce(upi->config_kset).u.string);
 		if (!cpi->pgh) {
-			ulogd_log(ULOGD_FATAL, "error opening ctnetlink\n");
+			ulogd_log(ULOGD_FATAL, "error opening overrun-purge netlink socket\n");
 			goto err_pgh;
 		}
 	}
@@ -1442,9 +1498,9 @@ static int constructor_nfct_polling(struct ulogd_pluginstance *upi)
 		goto err;
 	}
 
-	cpi->pgh = nfct_open(NFNL_SUBSYS_CTNETLINK, 0);
+	cpi->pgh = nfct_open_in_netns(0, network_namespace_path_ce(upi->config_kset).u.string);
 	if (!cpi->pgh) {
-		ulogd_log(ULOGD_FATAL, "error opening ctnetlink\n");
+		ulogd_log(ULOGD_FATAL, "error opening polling netlink socket\n");
 		goto err;
 	}
 	nfct_callback_register(cpi->pgh, NFCT_T_ALL, &polling_handler, upi);

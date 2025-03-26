@@ -135,6 +135,7 @@ logfile="/var/log/ulogd.log"
 #netlink_socket_buffer_size=217088
 #netlink_socket_buffer_maxsize=1085440
 #reliable=1 # enable reliable flow-based logging (may drop packets)
+#network_namespace_path=/run/netns/other # import flows from a different network namespace
 hash_enable=0
 
 # Logging of system packet through NFLOG
