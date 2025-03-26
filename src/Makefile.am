@@ -6,6 +6,7 @@ AM_CPPFLAGS += -DULOGD_CONFIGFILE='"$(sysconfdir)/ulogd.conf"' \
 
 sbin_PROGRAMS = ulogd
 
-ulogd_SOURCES = ulogd.c select.c timer.c rbtree.c conffile.c hash.c addr.c
+ulogd_SOURCES = ulogd.c select.c timer.c rbtree.c conffile.c hash.c \
+                addr.c namespace.c
 ulogd_LDADD   = ${libdl_LIBS} ${libpthread_LIBS}
 ulogd_LDFLAGS = -export-dynamic

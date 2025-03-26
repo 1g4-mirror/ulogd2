@@ -236,6 +236,27 @@ AS_IF([test "x$enable_json" != "xno"],
 AS_IF([test "x$libjansson_LIBS" != "x"], [enable_json=yes], [enable_json=no])
 AM_CONDITIONAL([HAVE_JANSSON], [test "x$libjansson_LIBS" != "x"])
 
+AC_ARG_ENABLE([namespace],
+              [AS_HELP_STRING([--enable-namespace], [Enable linux namespace functionality in plugins supporting it [default=test]])])
+AS_IF([test "x$enable_namespace" != "xno"], [
+  AC_CHECK_DECLS([setns, CLONE_NEWNET], [
+    enable_namespace=yes
+  ], [
+    AS_IF([test "x$enable_namespace" = "xyes"], [
+      AC_MSG_ERROR([linux namespace support enabled, but required symbols not available])
+    ], [
+      enable_namespace=no
+    ])
+  ], [[
+    #define _GNU_SOURCE 1
+    #include <fcntl.h>
+    #include <sched.h>
+  ]])
+])
+AS_IF([test "x$enable_namespace" = "xyes"], [
+  AC_DEFINE([ENABLE_NAMESPACE], [1], [Define to 1 if you want linux namespace support.])
+])
+
 AC_ARG_WITH([ulogd2libdir],
             [AS_HELP_STRING([--with-ulogd2libdir=PATH], [Default directory to load ulogd2 plugin from [[LIBDIR/ulogd]]])],
             [ulogd2libdir="$withval"],
@@ -283,6 +304,7 @@ EXPAND_VARIABLE(ulogd2libdir, e_ulogd2libdir)
 echo "
 Ulogd configuration:
   Default plugins directory:		${e_ulogd2libdir}
+  Linux namespace support:		${enable_namespace}
   Input plugins:
     NFLOG plugin:			${enable_nflog}
     NFCT plugin:			${enable_nfct}
