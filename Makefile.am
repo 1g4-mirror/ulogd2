@@ -1,4 +1,4 @@
-SUBDIRS = include libipulog src input filter output
+SUBDIRS = include src input filter output
 
 ACLOCAL_AMFLAGS = -I m4
 

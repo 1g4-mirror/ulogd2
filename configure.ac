@@ -246,16 +246,13 @@ AC_CONFIG_FILES([Makefile
 		 filter/Makefile
 		 filter/raw2packet/Makefile
 		 include/Makefile
-		 include/libipulog/Makefile
 		 include/linux/Makefile
 		 include/linux/netfilter/Makefile
-		 include/linux/netfilter_ipv4/Makefile
 		 include/ulogd/Makefile
 		 input/Makefile
 		 input/flow/Makefile
 		 input/packet/Makefile
 		 input/sum/Makefile
-		 libipulog/Makefile
 		 output/Makefile
 		 output/dbi/Makefile
 		 output/ipfix/Makefile

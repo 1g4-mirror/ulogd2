@@ -1,2 +1,1 @@
-SUBDIRS = netfilter		\
-	  netfilter_ipv4
+SUBDIRS = netfilter
