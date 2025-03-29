@@ -2,8 +2,7 @@
 #define _ULOGD_H
 /* ulogd
  *
- * userspace logging daemon for netfilter ULOG target
- * of the linux 2.4/2.6 netfilter subsystem.
+ * Userspace logging daemon for netfilter/iptables
  *
  * (C) 2000-2005 by Harald Welte <laforge@gnumonks.org>
  *

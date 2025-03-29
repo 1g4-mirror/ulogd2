@@ -9,8 +9,7 @@
 <abstract>
 This is the documentation for <tt>ulogd-2.x</tt>, the second generation
 Netfilter Userspace logging daemon.  ulogd makes use of the Linux &gt;= 2.6.14
-nfnetlink_log and nfnetlink_conntrack subsystems, but also provides backwards compatibility for Linux
-&gt;= 2.4.0 ipt_ULOG.
+nfnetlink_log and nfnetlink_conntrack subsystems.
 </abstract>
 
 <toc>
@@ -66,7 +65,6 @@ interconnected  by pointers.
 <sect1>Linux kernel
 <p>
 To use the NFCT or NFLOG input plugin, you will need a 2.6.14 or later kernel.
-For old-style ULOG logging, you need a kernel &gt;= 2.4.18.
 
 <sect1>Userspace libraries
 <p>
@@ -131,75 +129,6 @@ but still have certain packets logged immediately to userspace.
 A string that is associated with every packet logged by this rule.  You can use
 this option to later tell from which rule the packet was logged.
 </descrip>
-
-<sect1>iptables ULOG target
-<sect2>Quick Setup
-<p>
-Just add rules using the ULOG target to your firewalling chain. A very basic
-example:
-<tscreen><verb>
-iptables -A FORWARD -j ULOG --ulog-nlgroup 32 --ulog-prefix foo 
-</verb></tscreen>
-<p>
-To increase logging performance, try to use the
-<tscreen><verb>
---ulog-qthreshold N
-</verb></tscreen>
-option (where 1 &lt; N &lt;= 50). The number you specify is the amount of packets
-batched together in one multipart netlink message. If you set this to 20, the
-kernel schedules ulogd only once every 20 packets. All 20 packets are then 
-processed by ulogd. This reduces the number of context switches between kernel
-and userspace.
-<p>
-Of course you can combine the ULOG target with the different netfilter match
-modules.  For a more detailed description, have a look at the netfilter
-HOWTO's, available on the netfilter homepage.
-<sect2>ULOG target reference
-<p>
-<descrip>
-<tag>--ulog-nlgroup N</tag>
-The number of the netlink multicast group to which ULOG'ed packets are sent.
-You will have to use the same group number in the ULOG target and ulogd in
-order to make logging work.
-<tag>--ulog-cprange N</tag>
-Copyrange.  This works like the 'snaplen' parameter of tcpdump.  You can specify
-a number of bytes up to which the packet is copied.  If you say '40', you will
-receive the first fourty bytes of every packet. Leave it to <tt>0</tt>
-<tag>--ulog-qthreshold N</tag>
-Queue threshold.  If a packet is matched by the iptables rule, and already N
-packets are in the queue, the queue is flushed to userspace.  You can use this
-to implement a policy like: Use a big queue in order to gain high performance,
-but still have certain packets logged immediately to userspace.
-<tag>--ulog-prefix STRING</tag>
-A string that is associated with every packet logged by this rule.  You can use
-this option to later tell from which rule the packet was logged.
-</descrip>
-
-<sect2>ipt_ULOG module parameters
-<p>
-The ipt_ULOG kernel module has a couple of module loadtime parameters which can
-(and should) be tuned to accomodate the needs of the application:
-<descrip>
-<tag>nlbufsiz N</tag>
-Netlink buffer size. A buffer of the specified size N is allocated for every
-netlink group that is used.  Please note that due to restrictions of the kernel
-memory allocator, we cannot have a buffer size &gt; 128kBytes.  Larger buffer
-sizes increase the performance, since less kernel/userspace context switches
-are needed for the same amount of packets.  The backside of this performance
-gain is a potentially larger delay. The default value is 4096 bytes, which is
-quite small.
-<tag>flushtimeout N</tag> 
-The flushtimeout determines, after how many clock ticks (on alpha: 1ms, on
-x86 and most other platforms: 10ms time units) the buffer/queue is to be
-flushed, even if it is not full.  This can be used to have the advantage of a
-large buffer, but still a finite maximum delay introduced.  The default value
-is set to 10 seconds.
-</descrip>
-Example:
-<tscreen><verb>
-modprobe ipt_ULOG nlbufsiz=65535 flushtimeout=100
-</verb></tscreen>
-This would use a buffer size of 64k and a flushtimeout of 100 clockticks (1 second on x86).
 
 <sect1>ulogd
 <p>
@@ -318,20 +247,6 @@ Select event received from kernel based on a mask. Event types are defined as fo
 Specify the base socket buffer size. This start value will be increased if needed up to netlink_socket_buffer_maxsize. 
 <tag>netlink_socket_buffer_maxsize</tag>
 Specify the base socket buffer maximum size.
-</descrip>
-
-
-
-<sect2>ulogd_inppkt_ULOG.so
-<p>
-The good old ipt_ULOG input plugin.  This basically emulates ulogd-1.x which
-didn't have input plugins.
-<descrip>
-<tag>nlgroup</tag>
-The number of the netlink multicast group to which ULOG'ed packets are sent.
-You will have to use the same group number in the ULOG target and nin the input plugin.
-<tag>numeric_label</tag>
-You can use this label to store information relative to the logging. The administrator can define a convention which can be used later to differenciate packet. For example, it can store the severity of the logged event.
 </descrip>
 
 

@@ -10,7 +10,6 @@ in the doc/ subdirectory.
 
 This packages is intended for doing all netfilter related logging inside a
 userspace process.  This includes
-	- logging of ruleset violations via ipt_ULOG (kernel 2.4.18+)
 	- logging of ruleset violations via nfnetlink_log (kernel 2.6.14+)
 	- logging of connection startup/teardown (kernel 2.6.14+)
 	- connection-based accounting  (kernel 2.6.14+)

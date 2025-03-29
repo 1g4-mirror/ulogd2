@@ -198,11 +198,7 @@ static int interp_mac2str(struct ulogd_pluginstance *pi)
 		return ULOGD_IRET_ERR;
 
 	if (pp_is_valid(inp, KEY_RAW_TYPE))
-		/* NFLOG with Linux >= 2.6.27 case */
 		type = ikey_get_u16(&inp[KEY_RAW_TYPE]);
-	else if (ikey_get_u16(&inp[KEY_RAW_MACLEN]) == ETH_HLEN)
-		/* ULOG case, treat ethernet encapsulation */
-		type = ARPHRD_ETHER;
 	else
 		type = ARPHRD_VOID;
 
