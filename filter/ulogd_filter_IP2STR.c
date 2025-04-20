@@ -206,7 +206,7 @@ static int interp_ip2str(struct ulogd_pluginstance *pi)
 	return ULOGD_IRET_OK;
 }
 
-static struct ulogd_plugin ip2str_pluging = {
+static struct ulogd_plugin ip2str_plugin = {
 	.name = "IP2STR",
 	.input = {
 		.keys = ip2str_inp,
@@ -226,5 +226,5 @@ void __attribute__ ((constructor)) init(void);
 
 void init(void)
 {
-	ulogd_register_plugin(&ip2str_pluging);
+	ulogd_register_plugin(&ip2str_plugin);
 }
