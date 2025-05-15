@@ -58,15 +58,45 @@ to use.
 = NFLOG usage
 
 At first a simple example, which passes every outgoing packet to the
-userspace logging, using nfnetlink group 3.
+userspace logging, using nfnetlink group 3, in nftables:
 
-iptables -A OUTPUT -j NFLOG --nflog-group 3
+  ``` ruleset.nft ```
+  table inet filter {
+      chain output {
+          type filter hook output priority filter; policy accept;
+
+          log group 3
+      }
+  }
+  ```
+
+in iptables:
+
+  # iptables -A OUTPUT -j NFLOG --nflog-group 3
 
 A more advanced one, passing all incoming tcp packets with destination
 port 80 to the userspace logging daemon listening on netlink multicast
-group 32. All packets get tagged with the ulog prefix "inp"
+group 32. All packets get tagged with the ulog prefix "inp", in nftables:
 
-iptables -A INPUT -j NFLOG -p tcp --dport 80 --nflog-group 32 --nflog-prefix inp
+  ``` ruleset.nft ```
+  table inet filter {
+      chain intput {
+          type filter hook input priority filter; policy accept;
+
+          tcp dport 80 log prefix "inp" group 32
+      }
+  }
+  ```
+
+in iptables:
+
+  # iptables -A INPUT -j NFLOG -p tcp --dport 80 --nflog-group 32 --nflog-prefix inp
+
+See man nft(8) and section LOG STATEMENT for complete information on NFLOG.
+
+You can load your nftables ruleset with:
+
+  # nft -f ruleset.nft
 
 See iptables -j NFLOG -h for complete information about NFLOG.
 

@@ -1,5 +1,5 @@
 dnl Process this file with autoconf to produce a configure script.
-AC_INIT([ulogd], [2.0.8])
+AC_INIT([ulogd], [2.0.9])
 AC_PREREQ([2.50])
 AC_CONFIG_AUX_DIR([build-aux])
 AM_INIT_AUTOMAKE([-Wall foreign tar-pax no-dist-gzip dist-xz 1.10b subdir-objects])
@@ -38,7 +38,7 @@ AC_SEARCH_LIBS([pthread_create], [pthread], [libpthread_LIBS="$LIBS"; LIBS=""])
 AC_SUBST([libpthread_LIBS])
 
 dnl Check for the right nfnetlink version
-PKG_CHECK_MODULES([LIBNFNETLINK], [libnfnetlink >= 1.0.1])
+PKG_CHECK_MODULES([LIBNFNETLINK], [libnfnetlink >= 1.0.2])
 
 AC_ARG_ENABLE([nflog],
               [AS_HELP_STRING([--enable-nflog], [Enable nflog module [default=yes]])],
@@ -55,7 +55,7 @@ AC_ARG_ENABLE([nfct],
               [enable_nfct=$enableval],
               [enable_nfct=yes])
 AS_IF([test "x$enable_nfct" = "xyes"],
-      [PKG_CHECK_MODULES([LIBNETFILTER_CONNTRACK], [libnetfilter_conntrack >= 1.0.2])
+      [PKG_CHECK_MODULES([LIBNETFILTER_CONNTRACK], [libnetfilter_conntrack >= 1.1.0])
        AC_DEFINE([BUILD_NFCT], [1], [Building nfct module])],
       [enable_nfct=no])
 AM_CONDITIONAL([BUILD_NFCT], [test "x$enable_nfct" = "xyes"])
@@ -65,8 +65,8 @@ AC_ARG_ENABLE([nfacct],
               [enable_nfacct=$enableval],
               [enable_nfacct=yes])
 AS_IF([test "x$enable_nfacct" = "xyes"],
-      [PKG_CHECK_MODULES([LIBMNL], [libmnl >= 1.0.3])
-       PKG_CHECK_MODULES([LIBNETFILTER_ACCT], [libnetfilter_acct >= 1.0.1])
+      [PKG_CHECK_MODULES([LIBMNL], [libmnl >= 1.0.5])
+       PKG_CHECK_MODULES([LIBNETFILTER_ACCT], [libnetfilter_acct >= 1.0.3])
        AC_DEFINE([BUILD_NFACCT], [1], [Building nfacct module])],
       [enable_nfacct=no])
 AM_CONDITIONAL([BUILD_NFACCT], [test "x$enable_nfacct" = "xyes"])
