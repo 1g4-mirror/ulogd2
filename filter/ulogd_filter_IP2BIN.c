@@ -28,8 +28,6 @@
 #include <ulogd/ulogd.h>
 #include <netinet/if_ether.h>
 
-#define IPADDR_LENGTH 128
-
 enum input_keys {
 	KEY_OOB_FAMILY,
 	KEY_OOB_PROTOCOL,
@@ -114,7 +112,7 @@ static struct ulogd_key ip2bin_keys[] = {
 
 };
 
-static char ipbin_array[MAX_KEY - START_KEY + 1][IPADDR_LENGTH];
+static char ipbin_array[MAX_KEY - START_KEY + 1][FORMAT_IPV6_BUFSZ];
 
 static int ip2bin(struct ulogd_key *inp, int index, int oindex)
 {
@@ -161,7 +159,7 @@ static int ip2bin(struct ulogd_key *inp, int index, int oindex)
 			return ULOGD_IRET_ERR;
 	}
 
-	format_ipv6(ipbin_array[oindex], IPADDR_LENGTH, addr);
+	format_ipv6(ipbin_array[oindex], sizeof(ipbin_array[oindex]), addr);
 
 	return ULOGD_IRET_OK;
 }

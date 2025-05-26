@@ -370,7 +370,7 @@ static void __format_query_db(struct ulogd_pluginstance *upi, char *start)
 				sprintf(stmt_ins, "%u,", res->u.value.ui32);
 			else {
 				struct in6_addr ipv6;
-				char addrbuf[2 + sizeof(ipv6) * 2  + 1];
+				char addrbuf[FORMAT_IPV6_BUFSZ];
 
 				memcpy(ipv6.s6_addr, res->u.value.ui128,
 				       sizeof(ipv6.s6_addr));

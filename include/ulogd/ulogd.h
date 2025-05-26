@@ -23,6 +23,15 @@
 
 #define ARRAY_SIZE(x) (sizeof(x) / sizeof((x)[0]))
 
+/*
+ * Minimum size of buffer required to hold an ipv6 address encoded as a
+ * hex-string, e.g.:
+ *
+ *                          ::1 -> "0x00000000000000000000000000000001"
+ * 2600:1408:ec00:36::1736:7f28 -> "0x26001408ec0000360000000017367f28"
+ */
+#define FORMAT_IPV6_BUFSZ (2 + sizeof(struct in6_addr) * 2 + 1)
+
 /* All types with MSB = 1 make use of value.ptr
  * other types use one of the union's member */
 
@@ -233,7 +242,7 @@ format_ipv6(char *buf, size_t size, const struct in6_addr *ipv6)
 {
 	unsigned i = 0;
 
-	if (size > 2 + sizeof (*ipv6) * 2) {
+	if (size >= FORMAT_IPV6_BUFSZ) {
 		buf[i++] = '0';
 		buf[i++] = 'x';
 
