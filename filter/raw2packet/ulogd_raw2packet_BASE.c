@@ -960,6 +960,8 @@ static int _interp_pkt(struct ulogd_pluginstance *pi)
 		return _interp_ipv6hdr(pi, len);
 	case NFPROTO_BRIDGE:
 		return _interp_bridge(pi, len);
+	case NFPROTO_ARP:
+		return _interp_arp(pi, len);
 	}
 	return ULOGD_IRET_OK;
 }

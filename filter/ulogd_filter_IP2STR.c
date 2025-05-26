@@ -175,6 +175,7 @@ static int interp_ip2str(struct ulogd_pluginstance *pi)
 		addr_family = AF_INET6;
 		break;
 	case NFPROTO_IPV4:
+	case NFPROTO_ARP:
 		addr_family = AF_INET;
 		break;
 	case NFPROTO_BRIDGE:

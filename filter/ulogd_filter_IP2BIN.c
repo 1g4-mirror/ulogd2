@@ -39,7 +39,9 @@ enum input_keys {
 	KEY_ORIG_IP_DADDR,
 	KEY_REPLY_IP_SADDR,
 	KEY_REPLY_IP_DADDR,
-	MAX_KEY = KEY_REPLY_IP_DADDR,
+	KEY_ARP_SPA,
+	KEY_ARP_TPA,
+	MAX_KEY = KEY_ARP_TPA,
 };
 
 static struct ulogd_key ip2bin_inp[] = {
@@ -83,6 +85,16 @@ static struct ulogd_key ip2bin_inp[] = {
 		.flags	= ULOGD_RETF_NONE|ULOGD_KEYF_OPTIONAL,
 		.name	= "reply.ip.daddr",
 	},
+	[KEY_ARP_SPA] = {
+		.type = ULOGD_RET_IPADDR,
+		.flags = ULOGD_RETF_NONE|ULOGD_KEYF_OPTIONAL,
+		.name = "arp.saddr",
+	},
+	[KEY_ARP_TPA] = {
+		.type = ULOGD_RET_IPADDR,
+		.flags = ULOGD_RETF_NONE|ULOGD_KEYF_OPTIONAL,
+		.name = "arp.daddr",
+	},
 };
 
 static struct ulogd_key ip2bin_keys[] = {
@@ -110,7 +122,14 @@ static struct ulogd_key ip2bin_keys[] = {
 		.type = ULOGD_RET_RAWSTR,
 		.name = "reply.ip.daddr.bin",
 	},
-
+	{
+		.type = ULOGD_RET_RAWSTR,
+		.name = "arp.saddr.bin",
+	},
+	{
+		.type = ULOGD_RET_RAWSTR,
+		.name = "arp.daddr.bin",
+	},
 };
 
 static char ipbin_array[MAX_KEY - START_KEY + 1][FORMAT_IPV6_BUFSZ];
@@ -150,6 +169,7 @@ static int interp_ip2bin(struct ulogd_pluginstance *pi)
 		addr_family = AF_INET6;
 		break;
 	case NFPROTO_IPV4:
+	case NFPROTO_ARP:
 		addr_family = AF_INET;
 		break;
 	case NFPROTO_BRIDGE:

@@ -467,6 +467,9 @@ int printpkt_print(struct ulogd_key *res, char *buf)
 	case NFPROTO_BRIDGE:
 		buf_cur += printpkt_bridge(res, buf_cur);
 		break;
+	case NFPROTO_ARP:
+		buf_cur += printpkt_arp(res, buf_cur);
+		break;
 	}
 
 	if (pp_is_valid(res, KEY_OOB_UID))
