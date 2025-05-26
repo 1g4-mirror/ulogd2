@@ -48,6 +48,7 @@
 #include <ulogd/namespace.h>
 
 #include <libnetfilter_conntrack/libnetfilter_conntrack.h>
+#include <linux/netfilter.h>
 
 #ifndef NSEC_PER_SEC
 #define NSEC_PER_SEC    1000000000L
@@ -491,14 +492,14 @@ static uint32_t hash(const void *data, const struct hashtable *table)
 	const struct nf_conntrack *ct = data;
 
 	switch(nfct_get_attr_u8(ct, ATTR_L3PROTO)) {
-		case AF_INET:
-			ret = __hash4(ct, table);
-			break;
-		case AF_INET6:
-			ret = __hash6(ct, table);
-			break;
-		default:
-			break;
+	case NFPROTO_IPV4:
+		ret = __hash4(ct, table);
+		break;
+	case NFPROTO_IPV6:
+		ret = __hash6(ct, table);
+		break;
+	default:
+		break;
 	}
 
 	return ret;
@@ -528,7 +529,7 @@ static int propagate_ct(struct ulogd_pluginstance *main_upi,
 	okey_set_u8(&ret[NFCT_OOB_PROTOCOL], 0); /* FIXME */
 
 	switch (nfct_get_attr_u8(ct, ATTR_L3PROTO)) {
-	case AF_INET:
+	case NFPROTO_IPV4:
 		okey_set_u32(&ret[NFCT_ORIG_IP_SADDR],
 			     nfct_get_attr_u32(ct, ATTR_ORIG_IPV4_SRC));
 		okey_set_u32(&ret[NFCT_ORIG_IP_DADDR],
@@ -538,7 +539,7 @@ static int propagate_ct(struct ulogd_pluginstance *main_upi,
 		okey_set_u32(&ret[NFCT_REPLY_IP_DADDR],
 			     nfct_get_attr_u32(ct, ATTR_REPL_IPV4_DST));
 		break;
-	case AF_INET6:
+	case NFPROTO_IPV6:
 		okey_set_u128(&ret[NFCT_ORIG_IP_SADDR],
 			      nfct_get_attr(ct, ATTR_ORIG_IPV6_SRC));
 		okey_set_u128(&ret[NFCT_ORIG_IP_DADDR],
@@ -549,7 +550,7 @@ static int propagate_ct(struct ulogd_pluginstance *main_upi,
 			      nfct_get_attr(ct, ATTR_REPL_IPV6_DST));
 		break;
 	default:
-		ulogd_log(ULOGD_NOTICE, "Unknown protocol family (%d)\n",
+		ulogd_log(ULOGD_NOTICE, "Unexpected protocol family (%d)\n",
 			  nfct_get_attr_u8(ct, ATTR_L3PROTO));
 	}
 	okey_set_u8(&ret[NFCT_ORIG_IP_PROTOCOL],

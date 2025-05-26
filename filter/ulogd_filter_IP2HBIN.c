@@ -26,6 +26,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <arpa/inet.h>
+#include <linux/netfilter.h>
 #include <ulogd/ulogd.h>
 #include <netinet/if_ether.h>
 
@@ -135,14 +136,16 @@ static int interp_ip2hbin(struct ulogd_pluginstance *pi)
 	proto_family = ikey_get_u8(&inp[KEY_OOB_FAMILY]);
 
 	switch (proto_family) {
-	case AF_INET6:
-	case AF_INET:
-		addr_family = proto_family;
+	case NFPROTO_IPV6:
+		addr_family = AF_INET6;
 		break;
-	case AF_BRIDGE:
+	case NFPROTO_IPV4:
+		addr_family = AF_INET;
+		break;
+	case NFPROTO_BRIDGE:
 		if (!pp_is_valid(inp, KEY_OOB_PROTOCOL)) {
 			ulogd_log(ULOGD_NOTICE,
-				  "No protocol inside AF_BRIDGE packet\n");
+				  "No protocol inside NFPROTO_BRIDGE packet\n");
 			return ULOGD_IRET_ERR;
 		}
 		switch (ikey_get_u16(&inp[KEY_OOB_PROTOCOL])) {
@@ -155,13 +158,13 @@ static int interp_ip2hbin(struct ulogd_pluginstance *pi)
 			break;
 		default:
 			ulogd_log(ULOGD_NOTICE,
-				  "Unknown protocol inside AF_BRIDGE packet\n");
+				  "Unexpected protocol inside NFPROTO_BRIDGE packet\n");
 			return ULOGD_IRET_ERR;
 		}
 		break;
 	default:
 		/* TODO handle error */
-		ulogd_log(ULOGD_NOTICE, "Unknown protocol family\n");
+		ulogd_log(ULOGD_NOTICE, "Unexpected protocol family\n");
 		return ULOGD_IRET_ERR;
 	}
 

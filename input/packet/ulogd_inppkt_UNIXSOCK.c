@@ -32,6 +32,7 @@
 #include <pwd.h>
 #include <grp.h>
 #include <errno.h>
+#include <linux/netfilter.h>
 
 #include <ulogd/ulogd.h>
 
@@ -388,11 +389,11 @@ static int handle_packet(struct ulogd_pluginstance *upi, struct ulogd_unixsock_p
 	payload_len = ntohs(pkt->payload_length);
 
 	if (ip_version == 4)
-		oob_family = AF_INET;
+		oob_family = NFPROTO_IPV4;
 	else if (ip_version == 6)
-		oob_family = AF_INET6;
+		oob_family = NFPROTO_IPV6;
 	else
-		oob_family = 0;
+		oob_family = NFPROTO_UNSPEC;
 
 	okey_set_u8(&ret[UNIXSOCK_KEY_OOB_FAMILY], oob_family);
 	okey_set_ptr(&ret[UNIXSOCK_KEY_RAW_PCKT], &pkt->payload);

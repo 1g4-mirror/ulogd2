@@ -35,6 +35,7 @@
 #include <ulogd/conffile.h>
 #include <ulogd/printpkt.h>
 #include <netinet/if_ether.h>
+#include <linux/netfilter.h>
 
 struct ulogd_key printpkt_keys[] = {
 	[KEY_OOB_FAMILY]	= { .name = "oob.family", },
@@ -457,13 +458,13 @@ int printpkt_print(struct ulogd_key *res, char *buf)
 		buf_cur += sprintf(buf_cur, "MAC= ");
 
 	switch (ikey_get_u8(&res[KEY_OOB_FAMILY])) {
-	case AF_INET:
+	case NFPROTO_IPV4:
 		buf_cur += printpkt_ipv4(res, buf_cur);
 		break;
-	case AF_INET6:
+	case NFPROTO_IPV6:
 		buf_cur += printpkt_ipv6(res, buf_cur);
 		break;
-	case AF_BRIDGE:
+	case NFPROTO_BRIDGE:
 		buf_cur += printpkt_bridge(res, buf_cur);
 		break;
 	}

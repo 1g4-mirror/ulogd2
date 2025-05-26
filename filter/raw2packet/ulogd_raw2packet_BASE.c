@@ -44,6 +44,7 @@
 #include <ulogd/ipfix_protocol.h>
 #include <netinet/if_ether.h>
 #include <string.h>
+#include <linux/netfilter.h>
 #include <linux/types.h>
 
 enum input_keys {
@@ -937,7 +938,7 @@ static int _interp_bridge(struct ulogd_pluginstance *pi, uint32_t len)
 		_interp_arp(pi, len);
 		break;
 	/* ETH_P_8021Q ?? others? */
-	};
+	}
 
 	return ULOGD_IRET_OK;
 }
@@ -953,11 +954,11 @@ static int _interp_pkt(struct ulogd_pluginstance *pi)
 		     ikey_get_u16(&pi->input.keys[INKEY_OOB_PROTOCOL]));
 
 	switch (family) {
-	case AF_INET:
+	case NFPROTO_IPV4:
 		return _interp_iphdr(pi, len);
-	case AF_INET6:
+	case NFPROTO_IPV6:
 		return _interp_ipv6hdr(pi, len);
-	case AF_BRIDGE:
+	case NFPROTO_BRIDGE:
 		return _interp_bridge(pi, len);
 	}
 	return ULOGD_IRET_OK;
