@@ -137,12 +137,44 @@ static struct ulogd_key ip2str_keys[] = {
 
 static char ipstr_array[MAX_KEY - START_KEY + 1][INET6_ADDRSTRLEN];
 
-static int ip2str(struct ulogd_key *inp, int index, int oindex)
+static void ip2str(struct ulogd_key *inp, int i, struct ulogd_key *outp, int o,
+		   uint8_t addr_family)
 {
-	char family = ikey_get_u8(&inp[KEY_OOB_FAMILY]);
-	char convfamily = family;
+	union {
+		struct in6_addr in6;
+		struct in_addr  in;
+	} addr;
 
-	if (family == AF_BRIDGE) {
+	switch (addr_family) {
+	case AF_INET6:
+		memcpy(addr.in6.s6_addr, ikey_get_u128(&inp[i]),
+		       sizeof(addr.in6.s6_addr));
+		break;
+	case AF_INET:
+		addr.in.s_addr = ikey_get_u32(&inp[i]);
+		break;
+	}
+
+	inet_ntop(addr_family, &addr, ipstr_array[o], sizeof(ipstr_array[o]));
+
+	okey_set_ptr(&outp[o], ipstr_array[o]);
+}
+
+static int interp_ip2str(struct ulogd_pluginstance *pi)
+{
+	struct ulogd_key *outp = pi->output.keys;
+	struct ulogd_key *inp = pi->input.keys;
+	uint8_t proto_family, addr_family;
+	int i, o;
+
+	proto_family = ikey_get_u8(&inp[KEY_OOB_FAMILY]);
+
+	switch (proto_family) {
+	case AF_INET6:
+	case AF_INET:
+		addr_family = proto_family;
+		break;
+	case AF_BRIDGE:
 		if (!pp_is_valid(inp, KEY_OOB_PROTOCOL)) {
 			ulogd_log(ULOGD_NOTICE,
 				  "No protocol inside AF_BRIDGE packet\n");
@@ -150,56 +182,28 @@ static int ip2str(struct ulogd_key *inp, int index, int oindex)
 		}
 		switch (ikey_get_u16(&inp[KEY_OOB_PROTOCOL])) {
 		case ETH_P_IPV6:
-			convfamily = AF_INET6;
+			addr_family = AF_INET6;
 			break;
 		case ETH_P_IP:
-			convfamily = AF_INET;
-			break;
 		case ETH_P_ARP:
-			convfamily = AF_INET;
+			addr_family = AF_INET;
 			break;
 		default:
 			ulogd_log(ULOGD_NOTICE,
 				  "Unknown protocol inside AF_BRIDGE packet\n");
 			return ULOGD_IRET_ERR;
 		}
-	}
-
-	switch (convfamily) {
-		uint32_t ip;
-	case AF_INET6:
-		inet_ntop(AF_INET6,
-			  ikey_get_u128(&inp[index]),
-			  ipstr_array[oindex], sizeof(ipstr_array[oindex]));
-		break;
-	case AF_INET:
-		ip = ikey_get_u32(&inp[index]);
-		inet_ntop(AF_INET, &ip,
-			  ipstr_array[oindex], sizeof(ipstr_array[oindex]));
 		break;
 	default:
 		/* TODO error handling */
 		ulogd_log(ULOGD_NOTICE, "Unknown protocol family\n");
 		return ULOGD_IRET_ERR;
 	}
-	return ULOGD_IRET_OK;
-}
-
-static int interp_ip2str(struct ulogd_pluginstance *pi)
-{
-	struct ulogd_key *ret = pi->output.keys;
-	struct ulogd_key *inp = pi->input.keys;
-	int i;
-	int fret;
 
 	/* Iter on all addr fields */
-	for (i = START_KEY; i <= MAX_KEY; i++) {
+	for (i = START_KEY, o = 0; i <= MAX_KEY; i++, o++) {
 		if (pp_is_valid(inp, i)) {
-			fret = ip2str(inp, i, i - START_KEY);
-			if (fret != ULOGD_IRET_OK)
-				return fret;
-			okey_set_ptr(&ret[i - START_KEY],
-				     ipstr_array[i-START_KEY]);
+			ip2str(inp, i, outp, o, addr_family);
 		}
 	}
 

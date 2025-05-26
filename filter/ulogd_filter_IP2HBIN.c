@@ -112,17 +112,32 @@ static struct ulogd_key ip2hbin_keys[] = {
 	},
 };
 
+static void ip2hbin(struct ulogd_key *inp, int i, struct ulogd_key *outp, int o,
+		   uint8_t addr_family)
+{
+	switch (addr_family) {
+	case AF_INET6:
+		okey_set_u128(&outp[o], ikey_get_u128(&inp[i]));
+		break;
+	case AF_INET:
+		okey_set_u32(&outp[o], ntohl(ikey_get_u32(&inp[i])));
+		break;
+	}
+}
+
 static int interp_ip2hbin(struct ulogd_pluginstance *pi)
 {
-	struct ulogd_key *ret = pi->output.keys;
+	struct ulogd_key *outp = pi->output.keys;
 	struct ulogd_key *inp = pi->input.keys;
-	uint8_t family = ikey_get_u8(&inp[KEY_OOB_FAMILY]);
-	uint8_t convfamily = family;
-	int i;
+	uint8_t proto_family, addr_family;
+	int i, o;
 
-	switch (family) {
-	case AF_INET:
+	proto_family = ikey_get_u8(&inp[KEY_OOB_FAMILY]);
+
+	switch (proto_family) {
 	case AF_INET6:
+	case AF_INET:
+		addr_family = proto_family;
 		break;
 	case AF_BRIDGE:
 		if (!pp_is_valid(inp, KEY_OOB_PROTOCOL)) {
@@ -132,13 +147,11 @@ static int interp_ip2hbin(struct ulogd_pluginstance *pi)
 		}
 		switch (ikey_get_u16(&inp[KEY_OOB_PROTOCOL])) {
 		case ETH_P_IPV6:
-			convfamily = AF_INET6;
+			addr_family = AF_INET6;
 			break;
 		case ETH_P_IP:
-			convfamily = AF_INET;
-			break;
 		case ETH_P_ARP:
-			convfamily = AF_INET;
+			addr_family = AF_INET;
 			break;
 		default:
 			ulogd_log(ULOGD_NOTICE,
@@ -147,26 +160,15 @@ static int interp_ip2hbin(struct ulogd_pluginstance *pi)
 		}
 		break;
 	default:
-		ulogd_log(ULOGD_NOTICE,
-			  "Unknown protocol inside packet\n");
+		/* TODO handle error */
+		ulogd_log(ULOGD_NOTICE, "Unknown protocol family\n");
 		return ULOGD_IRET_ERR;
 	}
 
 	/* Iter on all addr fields */
-	for(i = START_KEY; i <= MAX_KEY; i++) {
+	for (i = START_KEY, o = 0; i <= MAX_KEY; i++, o++) {
 		if (pp_is_valid(inp, i)) {
-			switch (convfamily) {
-			case AF_INET:
-				okey_set_u32(&ret[i - START_KEY],
-					     ntohl(ikey_get_u32(&inp[i])));
-				break;
-			case AF_INET6:
-				okey_set_u128(&ret[i - START_KEY],
-					      ikey_get_u128(&inp[i]));
-				break;
-			default:
-				break;
-			}
+			ip2hbin(inp, i, outp, o, addr_family);
 		}
 	}
 
